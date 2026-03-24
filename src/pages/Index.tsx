@@ -146,6 +146,7 @@ export default function Index() {
     setExcluded([]);
     setPrefs({ budget: meal.budget, mood: meal.moods[0] || "any", prepTime: meal.prepTime, mealType: meal.type, diets: meal.diets });
     setView("result");
+    window.scrollTo({ top: 0 });
   }, []);
 
   const handleSave = useCallback((meal: Meal) => {
