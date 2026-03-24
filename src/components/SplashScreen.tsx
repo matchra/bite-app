@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import appIcon from "@/assets/app-icon-base.png";
+import appIcon from "@/assets/app-icon-full.png";
 
 interface SplashScreenProps {
   onFinish: () => void;
@@ -32,7 +32,7 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
             initial={{ scale: 0.6, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.1 }}
-            className="drop-shadow-2xl"
+            className="rounded-3xl shadow-2xl"
           />
           <motion.p
             initial={{ opacity: 0, y: 10 }}
