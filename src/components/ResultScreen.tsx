@@ -5,7 +5,6 @@ import { Bookmark, RefreshCw, Check, Smartphone, Share2, MapPin, ShoppingCart, E
 import { haptic, hapticSuccess } from "@/lib/haptics";
 import { fireConfetti } from "@/lib/confetti";
 import MealImage from "@/components/MealImage";
-import { haptic, hapticSuccess } from "@/lib/haptics";
 
 interface ResultScreenProps {
   meal: Meal;
