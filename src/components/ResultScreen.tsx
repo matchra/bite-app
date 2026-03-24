@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Meal, getCostLabel, getPrepLabel, getExplanation, Budget, Mood } from "@/data/meals";
-import { Bookmark, RefreshCw, Check, Smartphone, Share2, MapPin } from "lucide-react";
+import { Bookmark, RefreshCw, Check, Smartphone, Share2, MapPin, ShoppingCart, ExternalLink } from "lucide-react";
 import { haptic, hapticSuccess } from "@/lib/haptics";
 import { fireConfetti } from "@/lib/confetti";
 import MealImage from "@/components/MealImage";
+import NativeAd from "@/components/NativeAd";
 
 interface ResultScreenProps {
   meal: Meal;
@@ -30,12 +31,31 @@ const shuffleMessages = [
   "Trust the process.",
 ];
 
+// Show a soft interstitial ad every N shuffles
+const AD_SHUFFLE_INTERVAL = 4;
+
+function buildDeliveryUrl(mealName: string) {
+  const q = encodeURIComponent(mealName);
+  return `https://www.ubereats.com/search?q=${q}`;
+}
+
+function buildGroceryUrl(ingredients: string[]) {
+  const q = encodeURIComponent(ingredients.join(", "));
+  return `https://www.instacart.com/store/search/${q}`;
+}
+
 export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, onDone, isSaved, shuffleCount }: ResultScreenProps) {
   const explanation = getExplanation(mood, budget);
   const [justSaved, setJustSaved] = useState(false);
+  const [showShuffleAd, setShowShuffleAd] = useState(false);
 
   const isCook = meal.type === "cook";
   const ctaLabel = isCook ? "Start cooking 🍳" : "Order now 📱";
+
+  // Smart logic: show order CTA for order meals or quick cook meals
+  const isQuickMeal = meal.prepTime === "5";
+  const showOrderCta = !isCook;
+  const showGroceryCta = isCook && meal.ingredients.length > 0;
 
   const handleSave = () => {
     if (isSaved) return;
@@ -47,6 +67,17 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
 
   const handleShuffle = () => {
     haptic("medium");
+    const nextCount = shuffleCount + 1;
+    // Show soft ad every N shuffles
+    if (nextCount > 0 && nextCount % AD_SHUFFLE_INTERVAL === 0) {
+      setShowShuffleAd(true);
+    } else {
+      onShuffle?.();
+    }
+  };
+
+  const handleDismissAd = () => {
+    setShowShuffleAd(false);
     onShuffle?.();
   };
 
@@ -71,6 +102,42 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
     const query = encodeURIComponent(`${meal.name} near me`);
     window.open(`https://www.google.com/maps/search/${query}`, "_blank");
   };
+
+  const handleOrderDelivery = () => {
+    haptic("light");
+    window.open(buildDeliveryUrl(meal.name), "_blank");
+  };
+
+  const handleGetIngredients = () => {
+    haptic("light");
+    window.open(buildGroceryUrl(meal.ingredients), "_blank");
+  };
+
+  // Shuffle ad interstitial
+  if (showShuffleAd) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[100dvh] px-5 pt-safe pb-6 gap-6">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-sm text-muted-foreground text-center"
+        >
+          While you're deciding…
+        </motion.p>
+        <NativeAd variant="interstitial" context={meal.name} />
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          whileTap={{ scale: 0.96 }}
+          onClick={handleDismissAd}
+          className="py-3 px-8 rounded-2xl bg-secondary text-secondary-foreground font-medium text-sm active:bg-secondary/70 transition-all"
+        >
+          Keep browsing →
+        </motion.button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[100dvh] px-5 pt-safe pb-6">
@@ -169,11 +236,55 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
                   </motion.button>
                 </motion.div>
               )}
+
+              {/* ── Affiliate CTAs ── */}
+              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mt-4 space-y-2 relative z-10">
+                {showOrderCta && (
+                  <a
+                    href={buildDeliveryUrl(meal.name)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => haptic("light")}
+                    className="flex items-center gap-3 w-full p-3.5 rounded-2xl bg-primary/8 border border-primary/15 active:bg-primary/15 transition-colors"
+                  >
+                    <span className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Smartphone className="w-4.5 h-4.5 text-primary" />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-card-foreground">Order this nearby 📱</p>
+                      <p className="text-[10px] text-muted-foreground">Find it on delivery apps</p>
+                    </div>
+                    <ExternalLink className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                  </a>
+                )}
+
+                {showGroceryCta && (
+                  <a
+                    href={buildGroceryUrl(meal.ingredients)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => haptic("light")}
+                    className="flex items-center gap-3 w-full p-3.5 rounded-2xl bg-success/8 border border-success/15 active:bg-success/15 transition-colors"
+                  >
+                    <span className="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center flex-shrink-0">
+                      <ShoppingCart className="w-4.5 h-4.5 text-success" />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-card-foreground">Get ingredients 🛒</p>
+                      <p className="text-[10px] text-muted-foreground">{meal.ingredients.length} items · Shop on Instacart</p>
+                    </div>
+                    <ExternalLink className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                  </a>
+                )}
+              </motion.div>
             </div>
           </div>
 
+          {/* Inline native ad below result card */}
+          <NativeAd variant="inline" context={meal.name} />
+
           {/* Actions */}
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="flex gap-2.5 mt-5">
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="flex gap-2.5 mt-4">
             {onShuffle && (
               <motion.button whileTap={{ scale: 0.93 }} onClick={handleShuffle} className="flex-1 flex items-center justify-center gap-2 py-3.5 min-h-[48px] rounded-2xl bg-secondary text-secondary-foreground font-medium active:bg-secondary/70 transition-all duration-200 ease-out">
                 <motion.div key={`spin-${shuffleCount}`} animate={{ rotate: shuffleCount > 0 ? 360 : 0 }} transition={{ duration: 0.4 }}>
