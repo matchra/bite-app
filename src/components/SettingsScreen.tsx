@@ -3,6 +3,7 @@ import { ChevronRight, FileText, Shield, Mail, Info, Bell, BellOff, Sun, Moon, T
 import { getNotificationStatus, requestNotificationPermission } from "@/lib/streak";
 import { haptic } from "@/lib/haptics";
 import { motion } from "framer-motion";
+import appIcon from "@/assets/app-icon-full.png";
 
 interface SettingsScreenProps {
   onNavigate: (page: "privacy" | "terms" | "contact") => void;
