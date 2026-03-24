@@ -1,6 +1,6 @@
-import { Home, Bookmark, Settings } from "lucide-react";
+import { Home, Bookmark, Clock, Settings } from "lucide-react";
 
-export type Tab = "home" | "saved" | "settings";
+export type Tab = "home" | "saved" | "history" | "settings";
 
 interface BottomTabBarProps {
   active: Tab;
