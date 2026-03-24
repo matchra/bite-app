@@ -195,7 +195,7 @@ export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved
               <EmptyState
                 icon={<Clock className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />}
                 title="No history yet"
-                subtitle='Tap "Let\'s eat!" on a meal and it\'ll show up here.'
+                subtitle={"Tap \"Let's eat!\" on a meal and it'll show up here."}
               />
             ) : (
               <>
