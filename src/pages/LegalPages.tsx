@@ -93,7 +93,7 @@ export function PrivacyPolicyPage() {
 
       <h3 className="font-display font-semibold text-base text-foreground">Contact</h3>
       <p className="text-sm text-foreground/80">
-        If you have questions about this privacy policy, please contact us at <a href="mailto:hello@usebiteapp.com" className="text-primary underline">hello@usebiteapp.com</a>.
+        If you have questions about this privacy policy, please contact us at <a href="mailto:matchragroup@gmail.com" className="text-primary underline">matchragroup@gmail.com</a>.
       </p>
     </StandaloneLegal>
   );
@@ -141,7 +141,7 @@ export function TermsPage() {
 
       <h3 className="font-display font-semibold text-base text-foreground">Contact</h3>
       <p className="text-sm text-foreground/80">
-        Questions about these terms? Contact us at <a href="mailto:hello@usebiteapp.com" className="text-primary underline">hello@usebiteapp.com</a>.
+        Questions about these terms? Contact us at <a href="mailto:matchragroup@gmail.com" className="text-primary underline">matchragroup@gmail.com</a>.
       </p>
     </StandaloneLegal>
   );
@@ -158,7 +158,7 @@ export function ContactPage() {
       <div className="bg-muted rounded-2xl p-5 space-y-4">
         <div>
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</p>
-          <a href="mailto:hello@usebiteapp.com" className="text-sm text-primary font-medium">hello@usebiteapp.com</a>
+          <a href="mailto:matchragroup@gmail.com" className="text-sm text-primary font-medium">matchragroup@gmail.com</a>
         </div>
         <div>
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Website</p>
