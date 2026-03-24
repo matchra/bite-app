@@ -58,7 +58,29 @@ export default function Index() {
     localStorage.setItem("wsie-saved", JSON.stringify(meals));
   };
 
-  const activeTab: Tab = (view === "home" || view === "result") ? "home" : (view === "saved" ? "saved" : "settings");
+  const persistHistory = (entries: HistoryEntry[]) => {
+    setHistory(entries);
+    localStorage.setItem("wsie-history", JSON.stringify(entries));
+  };
+
+  const addToHistory = useCallback((meal: Meal) => {
+    const entry: HistoryEntry = {
+      id: `${meal.id}-${Date.now()}`,
+      mealId: meal.id,
+      mealName: meal.name,
+      mealEmoji: meal.emoji,
+      mealDescription: meal.description,
+      chosenAt: new Date().toISOString(),
+    };
+    const updated = [entry, ...history].slice(0, 50); // keep last 50
+    persistHistory(updated);
+  }, [history]);
+
+  const clearHistory = useCallback(() => {
+    persistHistory([]);
+  }, []);
+
+  const activeTab: Tab = (view === "home" || view === "result") ? "home" : (view === "saved" ? "saved" : (view === "history" ? "history" : "settings"));
 
   const handleTabChange = (tab: Tab) => {
     haptic("light");
