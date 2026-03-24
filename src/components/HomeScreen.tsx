@@ -257,7 +257,7 @@ export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
               <motion.button
                 whileTap={{ scale: 0.96 }}
                 onClick={handleIngredientsNext}
-                className="w-full mt-6 py-4 min-h-[52px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-colors"
+                className="w-full mt-6 py-4 min-h-[52px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-all duration-200 ease-out"
               >
                 {availableIngredients.length > 0 ? `Next with ${availableIngredients.length} ingredient${availableIngredients.length !== 1 ? "s" : ""} →` : "Skip — I'll get whatever"}
               </motion.button>
