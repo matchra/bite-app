@@ -248,7 +248,7 @@ export default function HomeScreen({ onDecide }: HomeScreenProps) {
   );
 }
 
-function StepContainer({ children, direction, variants }: { children: React.ReactNode; direction: number; variants: Record<string, (dir: number) => { opacity: number; x: number } | { opacity: number; x: number }> }) {
+function StepContainer({ children, direction, variants }: { children: React.ReactNode; direction: number; variants: any }) {
   return (
     <motion.div
       custom={direction}
