@@ -94,7 +94,7 @@ export default function SettingsScreen({ onNavigate, streak, totalDecided }: Set
             <div className="text-3xl">🍽️</div>
             <div className="flex-1">
               <p className="font-display font-bold text-card-foreground">Bite</p>
-              <p className="text-xs text-muted-foreground">Version 1.2.0</p>
+              <p className="text-xs text-muted-foreground">Version 1.3.0</p>
             </div>
             <div className="flex gap-3 text-right">
               {streak > 0 && (
