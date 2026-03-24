@@ -63,8 +63,8 @@ function ScreenshotCarousel() {
       >
         {screenshots.map((s, i) => (
           <div key={i} className="flex-shrink-0 snap-center w-[260px]">
-            <div className="rounded-[2rem] overflow-hidden shadow-xl border-[6px] border-foreground/10 bg-card">
-              <img src={s.src} alt={s.alt} className="w-full" loading="lazy" />
+            <div className="rounded-[2rem] overflow-hidden shadow-xl border-[6px] border-foreground/10 bg-card" style={{ aspectRatio: "390/844" }}>
+              <img src={s.src} alt={s.alt} className="w-full h-full object-cover" />
             </div>
           </div>
         ))}
