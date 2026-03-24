@@ -1,31 +1,11 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Budget, Mood, PrepTime, MealType } from "@/data/meals";
 import { haptic } from "@/lib/haptics";
 
 interface HomeScreenProps {
   onDecide: (prefs: { budget: Budget; mood: Mood; prepTime: PrepTime; mealType: MealType | "any" }) => void;
 }
-
-const budgetOptions: { value: Budget; label: string }[] = [
-  { value: "$", label: "$" },
-  { value: "$$", label: "$$" },
-  { value: "$$$", label: "$$$" },
-];
-
-const moodOptions: { value: Mood; label: string; emoji: string }[] = [
-  { value: "quick", label: "Quick", emoji: "⚡" },
-  { value: "healthy", label: "Healthy", emoji: "🥬" },
-  { value: "comfort", label: "Comfort", emoji: "🛋️" },
-  { value: "high-protein", label: "High Protein", emoji: "💪" },
-  { value: "any", label: "Surprise me", emoji: "🎲" },
-];
-
-const timeOptions: { value: PrepTime; label: string }[] = [
-  { value: "5", label: "5 min" },
-  { value: "15", label: "15 min" },
-  { value: "30+", label: "30+ min" },
-];
 
 const subtitles = [
   "Stop thinking. Just eat.",
@@ -37,34 +17,87 @@ const subtitles = [
 
 type ToggleValue = MealType | "any";
 
+type Step = "mood" | "method" | "budget" | "time";
+
 export default function HomeScreen({ onDecide }: HomeScreenProps) {
-  const [budget, setBudget] = useState<Budget>(() => {
-    return (localStorage.getItem("wsie-budget") as Budget) || "$$";
-  });
-  const [mood, setMood] = useState<Mood>(() => {
-    return (localStorage.getItem("wsie-mood") as Mood) || "any";
-  });
-  const [prepTime, setPrepTime] = useState<PrepTime>(() => {
-    return (localStorage.getItem("wsie-prepTime") as PrepTime) || "15";
-  });
-  const [mealType, setMealType] = useState<ToggleValue>(() => {
-    return (localStorage.getItem("wsie-mealType") as ToggleValue) || "any";
-  });
-
+  const [step, setStep] = useState<Step>("mood");
+  const [mood, setMood] = useState<Mood | null>(null);
+  const [mealType, setMealType] = useState<ToggleValue | null>(null);
+  const [budget, setBudget] = useState<Budget | null>(null);
+  const [prepTime, setPrepTime] = useState<PrepTime | null>(null);
   const [subtitle] = useState(() => subtitles[Math.floor(Math.random() * subtitles.length)]);
+  const [direction, setDirection] = useState(1);
 
-  const handleDecide = () => {
-    haptic("medium");
-    localStorage.setItem("wsie-budget", budget);
-    localStorage.setItem("wsie-mood", mood);
-    localStorage.setItem("wsie-prepTime", prepTime);
-    localStorage.setItem("wsie-mealType", mealType);
-    onDecide({ budget, mood, prepTime, mealType });
+  const selectMood = (v: Mood) => {
+    haptic("light");
+    setMood(v);
+    setTimeout(() => { setDirection(1); setStep("method"); }, 200);
   };
 
-  const handleChipSelect = <T,>(setter: (v: T) => void, value: T) => {
+  const selectMethod = (v: ToggleValue) => {
     haptic("light");
-    setter(value);
+    setMealType(v);
+    setTimeout(() => {
+      setDirection(1);
+      setStep("budget");
+    }, 200);
+  };
+
+  const selectBudget = (v: Budget) => {
+    haptic("light");
+    setBudget(v);
+    // If ordering, skip time and go straight to decide
+    if (mealType === "order") {
+      haptic("medium");
+      const savedPrefs = {
+        budget: v,
+        mood: mood || "any",
+        prepTime: "30+" as PrepTime,
+        mealType: mealType as ToggleValue,
+      };
+      persist(savedPrefs);
+      onDecide(savedPrefs);
+    } else {
+      setTimeout(() => { setDirection(1); setStep("time"); }, 200);
+    }
+  };
+
+  const selectTime = (v: PrepTime) => {
+    haptic("medium");
+    setPrepTime(v);
+    const savedPrefs = {
+      budget: budget || "$$",
+      mood: mood || "any",
+      prepTime: v,
+      mealType: (mealType || "any") as ToggleValue,
+    };
+    persist(savedPrefs);
+    setTimeout(() => onDecide(savedPrefs), 200);
+  };
+
+  const persist = (p: { budget: Budget; mood: Mood; prepTime: PrepTime; mealType: ToggleValue }) => {
+    localStorage.setItem("wsie-budget", p.budget);
+    localStorage.setItem("wsie-mood", p.mood);
+    localStorage.setItem("wsie-prepTime", p.prepTime);
+    localStorage.setItem("wsie-mealType", p.mealType);
+  };
+
+  const goBack = () => {
+    haptic("light");
+    setDirection(-1);
+    if (step === "method") setStep("mood");
+    else if (step === "budget") setStep("method");
+    else if (step === "time") setStep("budget");
+  };
+
+  const stepIndex = { mood: 0, method: 1, budget: 2, time: 3 };
+  const totalSteps = mealType === "order" ? 3 : 4;
+  const currentStep = stepIndex[step] + 1;
+
+  const variants = {
+    enter: (dir: number) => ({ opacity: 0, x: dir * 80 }),
+    center: { opacity: 1, x: 0 },
+    exit: (dir: number) => ({ opacity: 0, x: dir * -80 }),
   };
 
   return (
@@ -73,7 +106,7 @@ export default function HomeScreen({ onDecide }: HomeScreenProps) {
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="text-center mb-8"
+        className="text-center mb-10"
       >
         <motion.div
           initial={{ scale: 0.8 }}
@@ -89,75 +122,153 @@ export default function HomeScreen({ onDecide }: HomeScreenProps) {
         <p className="text-muted-foreground mt-1.5 text-base">{subtitle}</p>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-sm space-y-5"
-      >
-        <Section label="💰 Budget">
-          <div className="flex gap-2">
-            {budgetOptions.map((opt) => (
-              <Chip key={opt.value} selected={budget === opt.value} onClick={() => handleChipSelect(setBudget, opt.value)}>
-                {opt.label}
-              </Chip>
-            ))}
-          </div>
-        </Section>
+      <div className="w-full max-w-sm">
+        {/* Progress bar */}
+        <div className="flex gap-1.5 mb-8">
+          {Array.from({ length: totalSteps }).map((_, i) => (
+            <div key={i} className="flex-1 h-1 rounded-full overflow-hidden bg-secondary">
+              <motion.div
+                className="h-full bg-primary rounded-full"
+                initial={{ width: "0%" }}
+                animate={{ width: i < currentStep ? "100%" : "0%" }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              />
+            </div>
+          ))}
+        </div>
 
-        <Section label="✨ Vibe">
-          <div className="flex flex-wrap gap-2">
-            {moodOptions.map((opt) => (
-              <Chip key={opt.value} selected={mood === opt.value} onClick={() => handleChipSelect(setMood, opt.value)}>
-                {opt.emoji} {opt.label}
-              </Chip>
-            ))}
-          </div>
-        </Section>
+        {/* Back button */}
+        <AnimatePresence>
+          {step !== "mood" && (
+            <motion.button
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              onClick={goBack}
+              className="text-sm text-muted-foreground mb-4 flex items-center gap-1 min-h-[44px] active:text-foreground transition-colors"
+            >
+              ← Back
+            </motion.button>
+          )}
+        </AnimatePresence>
 
-        <Section label="⏱️ Time">
-          <div className="flex gap-2">
-            {timeOptions.map((opt) => (
-              <Chip key={opt.value} selected={prepTime === opt.value} onClick={() => handleChipSelect(setPrepTime, opt.value)}>
-                {opt.label}
-              </Chip>
-            ))}
-          </div>
-        </Section>
+        {/* Steps */}
+        <AnimatePresence mode="wait" custom={direction}>
+          {step === "mood" && (
+            <StepContainer key="mood" direction={direction} variants={variants}>
+              <StepTitle>What's the vibe? ✨</StepTitle>
+              <StepSubtitle>Pick what sounds right</StepSubtitle>
+              <div className="flex flex-wrap gap-2.5 mt-6">
+                {([
+                  { value: "quick" as const, label: "Quick", emoji: "⚡" },
+                  { value: "healthy" as const, label: "Healthy", emoji: "🥬" },
+                  { value: "comfort" as const, label: "Comfort", emoji: "🛋️" },
+                  { value: "high-protein" as const, label: "High Protein", emoji: "💪" },
+                  { value: "any" as const, label: "Surprise me", emoji: "🎲" },
+                ]).map((opt) => (
+                  <Chip key={opt.value} selected={mood === opt.value} onClick={() => selectMood(opt.value)}>
+                    {opt.emoji} {opt.label}
+                  </Chip>
+                ))}
+              </div>
+            </StepContainer>
+          )}
 
-        <Section label="🍳 Method">
-          <div className="flex gap-2">
-            {([
-              { value: "cook" as const, label: "🍳 Cook" },
-              { value: "order" as const, label: "📱 Order" },
-              { value: "any" as const, label: "🤷 Either" },
-            ]).map((opt) => (
-              <Chip key={opt.value} selected={mealType === opt.value} onClick={() => handleChipSelect(setMealType, opt.value)}>
-                {opt.label}
-              </Chip>
-            ))}
-          </div>
-        </Section>
+          {step === "method" && (
+            <StepContainer key="method" direction={direction} variants={variants}>
+              <StepTitle>Cook or order? 🍳</StepTitle>
+              <StepSubtitle>How much effort we talking?</StepSubtitle>
+              <div className="flex flex-col gap-3 mt-6">
+                {([
+                  { value: "cook" as const, emoji: "🍳", label: "I'll cook", desc: "Time to channel your inner chef" },
+                  { value: "order" as const, emoji: "📱", label: "Just order", desc: "Let someone else do the work" },
+                  { value: "any" as const, emoji: "🤷", label: "Either works", desc: "I'm flexible" },
+                ]).map((opt) => (
+                  <BigOption
+                    key={opt.value}
+                    selected={mealType === opt.value}
+                    onClick={() => selectMethod(opt.value)}
+                    emoji={opt.emoji}
+                    label={opt.label}
+                    desc={opt.desc}
+                  />
+                ))}
+              </div>
+            </StepContainer>
+          )}
 
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={handleDecide}
-          className="w-full py-4 min-h-[52px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-lg shadow-lg shadow-primary/25 active:bg-primary/90 transition-colors"
-        >
-          Decide for me 🍽️
-        </motion.button>
-      </motion.div>
+          {step === "budget" && (
+            <StepContainer key="budget" direction={direction} variants={variants}>
+              <StepTitle>What's the budget? 💰</StepTitle>
+              <StepSubtitle>No judgment either way</StepSubtitle>
+              <div className="flex flex-col gap-3 mt-6">
+                {([
+                  { value: "$" as const, label: "Cheap", desc: "Under $5 · Keep it simple" },
+                  { value: "$$" as const, label: "Moderate", desc: "$5–15 · The sweet spot" },
+                  { value: "$$$" as const, label: "Treat yourself", desc: "$15+ · You deserve it" },
+                ]).map((opt) => (
+                  <BigOption
+                    key={opt.value}
+                    selected={budget === opt.value}
+                    onClick={() => selectBudget(opt.value)}
+                    emoji={opt.value}
+                    label={opt.label}
+                    desc={opt.desc}
+                  />
+                ))}
+              </div>
+            </StepContainer>
+          )}
+
+          {step === "time" && (
+            <StepContainer key="time" direction={direction} variants={variants}>
+              <StepTitle>How much time? ⏱️</StepTitle>
+              <StepSubtitle>From zero effort to full send</StepSubtitle>
+              <div className="flex flex-col gap-3 mt-6">
+                {([
+                  { value: "5" as const, label: "5 minutes", desc: "Basically instant" },
+                  { value: "15" as const, label: "15 minutes", desc: "Quick and easy" },
+                  { value: "30+" as const, label: "30+ minutes", desc: "Worth the wait" },
+                ]).map((opt) => (
+                  <BigOption
+                    key={opt.value}
+                    selected={prepTime === opt.value}
+                    onClick={() => selectTime(opt.value)}
+                    emoji="⏱️"
+                    label={opt.label}
+                    desc={opt.desc}
+                  />
+                ))}
+              </div>
+            </StepContainer>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
 
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
+function StepContainer({ children, direction, variants }: { children: React.ReactNode; direction: number; variants: Record<string, (dir: number) => { opacity: number; x: number } | { opacity: number; x: number }> }) {
   return (
-    <div>
-      <p className="text-xs font-semibold text-muted-foreground mb-2">{label}</p>
+    <motion.div
+      custom={direction}
+      variants={variants}
+      initial="enter"
+      animate="center"
+      exit="exit"
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+    >
       {children}
-    </div>
+    </motion.div>
   );
+}
+
+function StepTitle({ children }: { children: React.ReactNode }) {
+  return <h2 className="font-display text-2xl font-bold text-foreground">{children}</h2>;
+}
+
+function StepSubtitle({ children }: { children: React.ReactNode }) {
+  return <p className="text-sm text-muted-foreground mt-1">{children}</p>;
 }
 
 function Chip({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: React.ReactNode }) {
@@ -165,15 +276,35 @@ function Chip({ selected, onClick, children }: { selected: boolean; onClick: () 
     <motion.button
       whileTap={{ scale: 0.93 }}
       onClick={onClick}
-      layout
-      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-      className={`px-4 py-3 min-h-[44px] rounded-xl text-sm font-medium transition-colors ${
+      className={`px-5 py-3.5 min-h-[48px] rounded-2xl text-base font-medium transition-colors ${
         selected
           ? "bg-foreground text-background shadow-md"
           : "bg-secondary text-secondary-foreground"
       }`}
     >
       {children}
+    </motion.button>
+  );
+}
+
+function BigOption({ selected, onClick, emoji, label, desc }: {
+  selected: boolean; onClick: () => void; emoji: string; label: string; desc: string;
+}) {
+  return (
+    <motion.button
+      whileTap={{ scale: 0.97 }}
+      onClick={onClick}
+      className={`w-full flex items-center gap-4 p-4 min-h-[64px] rounded-2xl text-left transition-all border ${
+        selected
+          ? "bg-foreground text-background border-foreground shadow-md"
+          : "bg-card text-card-foreground border-border"
+      }`}
+    >
+      <span className="text-2xl">{emoji}</span>
+      <div>
+        <p className={`font-display font-semibold ${selected ? "text-background" : "text-card-foreground"}`}>{label}</p>
+        <p className={`text-xs mt-0.5 ${selected ? "text-background/70" : "text-muted-foreground"}`}>{desc}</p>
+      </div>
     </motion.button>
   );
 }
