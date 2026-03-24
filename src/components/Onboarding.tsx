@@ -11,19 +11,19 @@ const slides = [
   {
     emoji: "🤔",
     title: "Can't decide what to eat?",
-    subtitle: "We've all been there. Staring at the fridge, scrolling through apps, still hungry.",
+    subtitle: "We've all been there. Staring at the fridge, scrolling through apps, still hungry. Bite fixes that.",
     bg: "from-primary/[0.06] to-transparent",
   },
   {
     emoji: "⚡",
-    title: "Answer a few quick questions",
-    subtitle: "Budget, mood, time — that's it. We'll pick the perfect meal for you in seconds.",
+    title: "A few taps. One answer.",
+    subtitle: "Tell us your mood, budget, and time. Bite picks the perfect meal for you in seconds.",
     bg: "from-success/[0.06] to-transparent",
   },
   {
     emoji: "🍽️",
-    title: "One meal. Done.",
-    subtitle: "No endless lists. No overthinking. Just a solid recommendation you'll actually want to eat.",
+    title: "Just bite.",
+    subtitle: "No endless lists. No overthinking. One solid pick you'll actually want to eat.",
     bg: "from-accent/[0.1] to-transparent",
   },
 ];
