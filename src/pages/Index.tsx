@@ -91,6 +91,7 @@ export default function Index() {
 
   const handleTabChange = (tab: Tab) => {
     haptic("light");
+    window.scrollTo({ top: 0, behavior: "smooth" });
     if (tab === "home") setView(view === "result" ? "result" : "home");
     else if (tab === "myeats") setView("myeats");
     else setView("settings");
