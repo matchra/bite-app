@@ -1,6 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import appIcon from "@/assets/app-icon-base.png";
+import appIcon from "@/assets/app-icon-full.png";
 
 interface StandaloneLegalProps {
   title: string;
