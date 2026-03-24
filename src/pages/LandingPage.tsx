@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
-import { ChevronRight, Zap, Clock, Wallet, UtensilsCrossed, Sparkles, Star, ArrowRight, ChevronLeft } from "lucide-react";
+import { ChevronRight, Star, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { trackEvent } from "@/lib/analytics";
 import appIcon from "@/assets/app-icon-base.png";
 import screenHome from "@/assets/landing-home.png";
 import screenResult from "@/assets/landing-result.png";
@@ -40,7 +41,6 @@ function ScreenshotCarousel() {
     scrollRef.current?.children[idx]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   };
 
-  // Sync active dot on scroll
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -69,7 +69,6 @@ function ScreenshotCarousel() {
           </div>
         ))}
       </div>
-      {/* Dots */}
       <div className="flex justify-center gap-2 mt-4">
         {screenshots.map((_, i) => (
           <button
@@ -99,7 +98,6 @@ export default function LandingPage() {
 
       {/* ────── HERO ────── */}
       <section className="relative min-h-[100dvh] flex flex-col items-center justify-center px-6 pt-16 pb-12 text-center">
-        {/* Subtle gradient blob */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/8 rounded-full blur-[120px] pointer-events-none" />
 
         <FadeUp>
@@ -128,21 +126,22 @@ export default function LandingPage() {
         </FadeUp>
 
         <FadeUp delay={0.3} className="flex flex-col gap-3 mt-8 w-full max-w-[300px]">
-          <a
-            href="#download"
+          <Link
+            to="/try"
+            onClick={() => trackEvent("try_now_click")}
             className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-all duration-200 text-center"
           >
-            Download the app
-          </a>
-          <Link
-            to="/app"
+            Try it now
+          </Link>
+          <a
+            href="#download"
+            onClick={() => trackEvent("download_click")}
             className="w-full py-3.5 rounded-2xl bg-secondary text-secondary-foreground font-display font-semibold text-sm active:bg-secondary/70 transition-all duration-200 text-center flex items-center justify-center gap-2"
           >
-            Try it instantly <ArrowRight className="w-4 h-4" />
-          </Link>
+            Download the app <ArrowRight className="w-4 h-4" />
+          </a>
         </FadeUp>
 
-        {/* Scroll hint */}
         <motion.div
           animate={{ y: [0, 6, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
@@ -249,7 +248,6 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* Stats */}
           <FadeUp delay={0.2}>
             <div className="flex gap-3 mt-8">
               {[
@@ -285,18 +283,20 @@ export default function LandingPage() {
               No thinking required. Let Bite decide.
             </p>
             <div className="flex flex-col gap-3">
-              <a
-                href="#download"
+              <Link
+                to="/try"
+                onClick={() => trackEvent("try_now_click")}
                 className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-all duration-200 text-center"
               >
                 Let Bite decide
-              </a>
-              <Link
-                to="/app"
+              </Link>
+              <a
+                href="#download"
+                onClick={() => trackEvent("download_click")}
                 className="w-full py-3.5 rounded-2xl bg-secondary text-secondary-foreground font-display font-semibold text-sm active:bg-secondary/70 transition-all duration-200 text-center"
               >
-                Try it instantly — free
-              </Link>
+                Download the app
+              </a>
             </div>
           </div>
         </FadeUp>
@@ -310,10 +310,10 @@ export default function LandingPage() {
             <span className="font-display font-bold text-foreground">Bite</span>
           </div>
           <div className="flex gap-6 text-xs text-muted-foreground">
-            <Link to="/app" className="hover:text-foreground transition-colors">Open App</Link>
-            <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
-            <a href="#" className="hover:text-foreground transition-colors">Terms</a>
-            <a href="#" className="hover:text-foreground transition-colors">Contact</a>
+            <Link to="/try" className="hover:text-foreground transition-colors">Try App</Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+            <Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link>
           </div>
           <p className="text-[10px] text-muted-foreground/60">
             © {new Date().getFullYear()} Bite. All rights reserved.
