@@ -11,7 +11,7 @@ interface ResultScreenProps {
   budget: Budget;
   onShuffle: () => void;
   onSave: (meal: Meal) => void;
-  onDone: () => void;
+  onDone: (meal: Meal) => void;
   isSaved: boolean;
   shuffleCount: number;
 }
