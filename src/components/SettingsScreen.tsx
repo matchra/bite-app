@@ -30,7 +30,7 @@ export default function SettingsScreen({ onNavigate, streak }: SettingsScreenPro
           <div className="flex items-center gap-3 px-4 py-3.5">
             <div className="text-3xl">🍽️</div>
             <div className="flex-1">
-              <p className="font-display font-bold text-card-foreground">What Should I Eat?</p>
+              <p className="font-display font-bold text-card-foreground">Bite</p>
               <p className="text-xs text-muted-foreground">Version 1.1.0</p>
             </div>
             {streak > 0 && (
