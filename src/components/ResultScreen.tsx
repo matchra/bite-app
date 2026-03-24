@@ -169,7 +169,7 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
                 <motion.button
                   whileTap={{ scale: 0.96 }}
                   onClick={handleNearMe}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium active:bg-secondary/70 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium active:bg-secondary/70 transition-all duration-200 ease-out"
                 >
                   <MapPin className="w-4 h-4" />
                   Find {meal.name} near me

@@ -284,7 +284,7 @@ export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
               <motion.button
                 whileTap={{ scale: 0.96 }}
                 onClick={handleDietNext}
-                className="w-full mt-6 py-4 min-h-[52px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-colors"
+                className="w-full mt-6 py-4 min-h-[52px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-all duration-200 ease-out"
               >
                 {diets.length > 0 ? "Next →" : "Skip — I eat everything"}
               </motion.button>
