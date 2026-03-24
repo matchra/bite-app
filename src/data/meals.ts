@@ -163,6 +163,7 @@ export interface UserPreferences {
   prepTime: PrepTime;
   mealType: MealType | "any";
   diets: Diet[];
+  availableIngredients?: string[];
 }
 
 export function getCurrentMealTime(): MealTime {
