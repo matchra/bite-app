@@ -3,6 +3,7 @@ import { ChevronRight, FileText, Shield, Mail, Info, Bell, BellOff, Sun, Moon, T
 import { getNotificationStatus, requestNotificationPermission } from "@/lib/streak";
 import { haptic } from "@/lib/haptics";
 import { motion } from "framer-motion";
+import appIcon from "@/assets/app-icon-full.png";
 
 interface SettingsScreenProps {
   onNavigate: (page: "privacy" | "terms" | "contact") => void;
@@ -91,7 +92,7 @@ export default function SettingsScreen({ onNavigate, streak, totalDecided }: Set
         <SectionLabel>About</SectionLabel>
         <div className="bg-card rounded-2xl border border-border overflow-hidden">
           <div className="flex items-center gap-3 px-4 py-3.5">
-            <div className="text-3xl">🍽️</div>
+            <img src={appIcon} alt="Bite" className="w-10 h-10 rounded-xl" />
             <div className="flex-1">
               <p className="font-display font-bold text-card-foreground">Bite</p>
               <p className="text-xs text-muted-foreground">Version 1.3.0</p>
