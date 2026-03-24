@@ -95,7 +95,7 @@ export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
     exit: (dir: number) => ({ opacity: 0, x: dir * -80 }),
   };
 
-  const motd = getMealOfTheDay();
+  
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100dvh-80px)] px-5 pt-safe pb-4">
