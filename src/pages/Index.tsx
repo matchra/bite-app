@@ -1,20 +1,22 @@
 import { useState, useCallback } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import HomeScreen from "@/components/HomeScreen";
 import ResultScreen from "@/components/ResultScreen";
 import SavedMeals from "@/components/SavedMeals";
+import SettingsScreen from "@/components/SettingsScreen";
+import BottomTabBar, { Tab } from "@/components/BottomTabBar";
+import { PrivacyPolicy, TermsOfService, ContactSupport } from "@/components/LegalPage";
 import { Meal, UserPreferences, recommendMeal } from "@/data/meals";
-import { Bookmark } from "lucide-react";
 
-type Screen = "home" | "result" | "saved";
+type View = "home" | "result" | "saved" | "settings" | "privacy" | "terms" | "contact";
 
 function loadSaved(): Meal[] {
-  try {
-    return JSON.parse(localStorage.getItem("wsie-saved") || "[]");
-  } catch { return []; }
+  try { return JSON.parse(localStorage.getItem("wsie-saved") || "[]"); }
+  catch { return []; }
 }
 
 export default function Index() {
-  const [screen, setScreen] = useState<Screen>("home");
+  const [view, setView] = useState<View>("home");
   const [currentMeal, setCurrentMeal] = useState<Meal | null>(null);
   const [prefs, setPrefs] = useState<UserPreferences | null>(null);
   const [excluded, setExcluded] = useState<string[]>([]);
@@ -25,14 +27,18 @@ export default function Index() {
     localStorage.setItem("wsie-saved", JSON.stringify(meals));
   };
 
+  const activeTab: Tab = (view === "home" || view === "result") ? "home" : (view === "saved" ? "saved" : "settings");
+
+  const handleTabChange = (tab: Tab) => {
+    if (tab === "home") setView(view === "result" ? "result" : "home");
+    else setView(tab);
+  };
+
   const handleDecide = useCallback((p: UserPreferences) => {
     setPrefs(p);
     setExcluded([]);
     const meal = recommendMeal(p, []);
-    if (meal) {
-      setCurrentMeal(meal);
-      setScreen("result");
-    }
+    if (meal) { setCurrentMeal(meal); setView("result"); }
   }, []);
 
   const handleShuffle = useCallback(() => {
@@ -40,15 +46,10 @@ export default function Index() {
     const newExcluded = [...excluded, currentMeal.id];
     setExcluded(newExcluded);
     const meal = recommendMeal(prefs, newExcluded);
-    if (meal) {
-      setCurrentMeal(meal);
-    } else {
-      // Reset exclusions and try again
+    if (meal) { setCurrentMeal(meal); }
+    else {
       const fresh = recommendMeal(prefs, []);
-      if (fresh) {
-        setExcluded([]);
-        setCurrentMeal(fresh);
-      }
+      if (fresh) { setExcluded([]); setCurrentMeal(fresh); }
     }
   }, [prefs, currentMeal, excluded]);
 
@@ -61,36 +62,39 @@ export default function Index() {
     persistSaved(saved.filter((m) => m.id !== id));
   }, [saved]);
 
-  return (
-    <div className="relative">
-      {/* Saved button - visible on home */}
-      {screen === "home" && saved.length > 0 && (
-        <button
-          onClick={() => setScreen("saved")}
-          className="fixed top-5 right-5 z-10 p-3 rounded-2xl bg-card border border-border shadow-sm text-foreground"
-        >
-          <Bookmark className="w-5 h-5" />
-          {saved.length > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
-              {saved.length}
-            </span>
-          )}
-        </button>
-      )}
+  const showTabBar = view !== "result";
 
-      {screen === "home" && <HomeScreen onDecide={handleDecide} />}
-      {screen === "result" && currentMeal && prefs && (
-        <ResultScreen
-          meal={currentMeal}
-          mood={prefs.mood}
-          budget={prefs.budget}
-          onShuffle={handleShuffle}
-          onSave={handleSave}
-          onDone={() => setScreen("home")}
-          isSaved={saved.some((m) => m.id === currentMeal.id)}
-        />
-      )}
-      {screen === "saved" && <SavedMeals meals={saved} onBack={() => setScreen("home")} onRemove={handleRemove} />}
+  return (
+    <div className="relative select-none">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={view}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          {view === "home" && <HomeScreen onDecide={handleDecide} />}
+          {view === "result" && currentMeal && prefs && (
+            <ResultScreen
+              meal={currentMeal}
+              mood={prefs.mood}
+              budget={prefs.budget}
+              onShuffle={handleShuffle}
+              onSave={handleSave}
+              onDone={() => setView("home")}
+              isSaved={saved.some((m) => m.id === currentMeal.id)}
+            />
+          )}
+          {view === "saved" && <SavedMeals meals={saved} onRemove={handleRemove} />}
+          {view === "settings" && <SettingsScreen onNavigate={(page) => setView(page)} />}
+          {view === "privacy" && <PrivacyPolicy onBack={() => setView("settings")} />}
+          {view === "terms" && <TermsOfService onBack={() => setView("settings")} />}
+          {view === "contact" && <ContactSupport onBack={() => setView("settings")} />}
+        </motion.div>
+      </AnimatePresence>
+
+      {showTabBar && <BottomTabBar active={activeTab} onChange={handleTabChange} savedCount={saved.length} />}
     </div>
   );
 }

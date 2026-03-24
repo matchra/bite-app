@@ -51,26 +51,25 @@ export default function HomeScreen({ onDecide }: HomeScreenProps) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-5 py-8">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100dvh-80px)] px-5 pt-safe pb-4">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.4 }}
         className="text-center mb-8"
       >
-        <h1 className="font-display text-4xl font-bold text-foreground tracking-tight">
+        <h1 className="font-display text-3xl font-bold text-foreground tracking-tight">
           What Should I Eat?
         </h1>
-        <p className="text-muted-foreground mt-2 text-lg">Stop thinking. Just eat.</p>
+        <p className="text-muted-foreground mt-1.5 text-base">Stop thinking. Just eat.</p>
       </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.15 }}
-        className="w-full max-w-sm space-y-6"
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="w-full max-w-sm space-y-5"
       >
-        {/* Budget */}
         <Section label="Budget">
           <div className="flex gap-2">
             {budgetOptions.map((opt) => (
@@ -81,7 +80,6 @@ export default function HomeScreen({ onDecide }: HomeScreenProps) {
           </div>
         </Section>
 
-        {/* Mood */}
         <Section label="Mood">
           <div className="flex flex-wrap gap-2">
             {moodOptions.map((opt) => (
@@ -92,7 +90,6 @@ export default function HomeScreen({ onDecide }: HomeScreenProps) {
           </div>
         </Section>
 
-        {/* Time */}
         <Section label="Time">
           <div className="flex gap-2">
             {timeOptions.map((opt) => (
@@ -103,7 +100,6 @@ export default function HomeScreen({ onDecide }: HomeScreenProps) {
           </div>
         </Section>
 
-        {/* Cook or Order */}
         <Section label="Cook or Order?">
           <div className="flex gap-2">
             {([
@@ -118,12 +114,10 @@ export default function HomeScreen({ onDecide }: HomeScreenProps) {
           </div>
         </Section>
 
-        {/* CTA */}
         <motion.button
-          whileTap={{ scale: 0.97 }}
-          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.96 }}
           onClick={handleDecide}
-          className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-display font-bold text-lg shadow-lg shadow-primary/25 transition-colors active:bg-primary/90"
+          className="w-full py-4 min-h-[52px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-lg shadow-lg shadow-primary/25 active:bg-primary/90 transition-colors"
         >
           Decide for me 🍽️
         </motion.button>
@@ -135,7 +129,7 @@ export default function HomeScreen({ onDecide }: HomeScreenProps) {
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-sm font-medium text-muted-foreground mb-2">{label}</p>
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{label}</p>
       {children}
     </div>
   );
@@ -145,10 +139,10 @@ function Chip({ selected, onClick, children }: { selected: boolean; onClick: () 
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+      className={`px-4 py-3 min-h-[44px] rounded-xl text-sm font-medium transition-all active:scale-95 ${
         selected
           ? "bg-foreground text-background shadow-md"
-          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+          : "bg-secondary text-secondary-foreground active:bg-secondary/70"
       }`}
     >
       {children}
