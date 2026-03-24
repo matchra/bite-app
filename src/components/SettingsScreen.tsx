@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronRight, FileText, Shield, Mail, Info, Bell, BellOff, Sun, Moon, Trash2, Download } from "lucide-react";
+import { ChevronRight, FileText, Shield, Mail, Info, Bell, BellOff, Sun, Moon, Trash2, Download, Globe } from "lucide-react";
 import { getNotificationStatus, requestNotificationPermission } from "@/lib/streak";
 import { haptic } from "@/lib/haptics";
 import { motion } from "framer-motion";
