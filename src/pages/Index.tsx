@@ -145,6 +145,7 @@ export default function Index() {
             />
           )}
           {view === "saved" && <SavedMeals meals={saved} onRemove={handleRemove} />}
+          {view === "history" && <HistoryScreen entries={history} onClear={clearHistory} />}
           {view === "settings" && <SettingsScreen onNavigate={(page) => setView(page)} streak={streak} />}
           {view === "privacy" && <PrivacyPolicy onBack={() => setView("settings")} />}
           {view === "terms" && <TermsOfService onBack={() => setView("settings")} />}
