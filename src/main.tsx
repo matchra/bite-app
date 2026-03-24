@@ -5,3 +5,4 @@ import { initTheme } from "./components/SettingsScreen";
 
 initTheme();
 createRoot(document.getElementById("root")!).render(<App />);
+
