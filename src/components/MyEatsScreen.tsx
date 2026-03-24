@@ -112,7 +112,7 @@ export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved
       <AnimatePresence mode="wait">
         {/* SAVED TAB */}
         {subTab === "saved" && (
-          <motion.div key="saved" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div key="saved" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}>
             {savedMeals.length === 0 ? (
               <EmptyState
                 icon={<UtensilsCrossed className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />}
@@ -152,7 +152,7 @@ export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved
 
         {/* HISTORY TAB */}
         {subTab === "history" && (
-          <motion.div key="history" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div key="history" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}>
             {/* Stats card */}
             {stats && (
               <motion.div
@@ -240,7 +240,7 @@ export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved
 
         {/* GROCERY TAB */}
         {subTab === "grocery" && (
-          <motion.div key="grocery" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div key="grocery" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}>
             {cookMeals.length === 0 ? (
               <EmptyState
                 icon={<ShoppingCart className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />}
