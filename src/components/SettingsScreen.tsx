@@ -1,10 +1,23 @@
-import { ChevronRight, FileText, Shield, Mail, Info } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChevronRight, FileText, Shield, Mail, Info, Bell, BellOff } from "lucide-react";
+import { getNotificationStatus, requestNotificationPermission } from "@/lib/streak";
+import { haptic } from "@/lib/haptics";
 
 interface SettingsScreenProps {
   onNavigate: (page: "privacy" | "terms" | "contact") => void;
+  streak: number;
 }
 
-export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
+export default function SettingsScreen({ onNavigate, streak }: SettingsScreenProps) {
+  const [notifStatus, setNotifStatus] = useState(getNotificationStatus);
+
+  const handleNotifToggle = async () => {
+    haptic("light");
+    if (notifStatus === "granted") return;
+    const granted = await requestNotificationPermission();
+    setNotifStatus(granted ? "granted" : "denied");
+  };
+
   return (
     <div className="px-5 pt-safe pb-28 max-w-lg mx-auto">
       <div className="pt-6 mb-6">
@@ -16,11 +29,40 @@ export default function SettingsScreen({ onNavigate }: SettingsScreenProps) {
         <div className="bg-card rounded-2xl border border-border overflow-hidden">
           <div className="flex items-center gap-3 px-4 py-3.5">
             <div className="text-3xl">🍽️</div>
-            <div>
+            <div className="flex-1">
               <p className="font-display font-bold text-card-foreground">What Should I Eat?</p>
-              <p className="text-xs text-muted-foreground">Version 1.0.0</p>
+              <p className="text-xs text-muted-foreground">Version 1.1.0</p>
             </div>
+            {streak > 0 && (
+              <div className="text-right">
+                <p className="text-lg">🔥</p>
+                <p className="text-[10px] text-muted-foreground font-medium">{streak} day{streak !== 1 ? "s" : ""}</p>
+              </div>
+            )}
           </div>
+        </div>
+
+        <SectionLabel>Notifications</SectionLabel>
+        <div className="bg-card rounded-2xl border border-border overflow-hidden">
+          <button onClick={handleNotifToggle} className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[48px] active:bg-muted/50 transition-colors">
+            {notifStatus === "granted" ? (
+              <Bell className="w-5 h-5 text-success" />
+            ) : (
+              <BellOff className="w-5 h-5 text-muted-foreground" />
+            )}
+            <div className="flex-1 text-left">
+              <p className="text-sm text-card-foreground">Lunch reminders</p>
+              <p className="text-xs text-muted-foreground">
+                {notifStatus === "granted" ? "Enabled — we'll nudge you at lunch" :
+                 notifStatus === "denied" ? "Blocked — enable in browser settings" :
+                 notifStatus === "unsupported" ? "Not supported on this device" :
+                 "Tap to enable reminders"}
+              </p>
+            </div>
+            {notifStatus === "default" && (
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
         </div>
 
         <SectionLabel>Legal</SectionLabel>

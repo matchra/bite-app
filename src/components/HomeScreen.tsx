@@ -1,32 +1,26 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Budget, Mood, PrepTime, MealType } from "@/data/meals";
+import { Budget, Mood, PrepTime, MealType, Diet, getTimeGreeting } from "@/data/meals";
 import { haptic } from "@/lib/haptics";
 
 interface HomeScreenProps {
-  onDecide: (prefs: { budget: Budget; mood: Mood; prepTime: PrepTime; mealType: MealType | "any" }) => void;
+  onDecide: (prefs: { budget: Budget; mood: Mood; prepTime: PrepTime; mealType: MealType | "any"; diets: Diet[] }) => void;
+  streak: number;
 }
 
-const subtitles = [
-  "Stop thinking. Just eat.",
-  "Your brain is tired. We got this.",
-  "Decision fatigue? Not today.",
-  "Less thinking, more eating.",
-  "One tap away from food happiness.",
-];
-
 type ToggleValue = MealType | "any";
+type Step = "mood" | "method" | "diet" | "budget" | "time";
 
-type Step = "mood" | "method" | "budget" | "time";
-
-export default function HomeScreen({ onDecide }: HomeScreenProps) {
+export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
   const [step, setStep] = useState<Step>("mood");
   const [mood, setMood] = useState<Mood | null>(null);
   const [mealType, setMealType] = useState<ToggleValue | null>(null);
   const [budget, setBudget] = useState<Budget | null>(null);
   const [prepTime, setPrepTime] = useState<PrepTime | null>(null);
-  const [subtitle] = useState(() => subtitles[Math.floor(Math.random() * subtitles.length)]);
+  const [diets, setDiets] = useState<Diet[]>([]);
   const [direction, setDirection] = useState(1);
+
+  const { greeting, emoji } = getTimeGreeting();
 
   const selectMood = (v: Mood) => {
     haptic("light");
@@ -37,24 +31,26 @@ export default function HomeScreen({ onDecide }: HomeScreenProps) {
   const selectMethod = (v: ToggleValue) => {
     haptic("light");
     setMealType(v);
-    setTimeout(() => {
-      setDirection(1);
-      setStep("budget");
-    }, 200);
+    setTimeout(() => { setDirection(1); setStep("diet"); }, 200);
+  };
+
+  const handleDietNext = () => {
+    haptic("light");
+    setDirection(1);
+    setStep("budget");
+  };
+
+  const toggleDiet = (d: Diet) => {
+    haptic("light");
+    setDiets((prev) => prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]);
   };
 
   const selectBudget = (v: Budget) => {
     haptic("light");
     setBudget(v);
-    // If ordering, skip time and go straight to decide
     if (mealType === "order") {
       haptic("medium");
-      const savedPrefs = {
-        budget: v,
-        mood: mood || "any",
-        prepTime: "30+" as PrepTime,
-        mealType: mealType as ToggleValue,
-      };
+      const savedPrefs = { budget: v, mood: mood || "any" as Mood, prepTime: "30+" as PrepTime, mealType: mealType as ToggleValue, diets };
       persist(savedPrefs);
       onDecide(savedPrefs);
     } else {
@@ -65,34 +61,33 @@ export default function HomeScreen({ onDecide }: HomeScreenProps) {
   const selectTime = (v: PrepTime) => {
     haptic("medium");
     setPrepTime(v);
-    const savedPrefs = {
-      budget: budget || "$$",
-      mood: mood || "any",
-      prepTime: v,
-      mealType: (mealType || "any") as ToggleValue,
-    };
+    const savedPrefs = { budget: budget || "$$" as Budget, mood: mood || "any" as Mood, prepTime: v, mealType: (mealType || "any") as ToggleValue, diets };
     persist(savedPrefs);
     setTimeout(() => onDecide(savedPrefs), 200);
   };
 
-  const persist = (p: { budget: Budget; mood: Mood; prepTime: PrepTime; mealType: ToggleValue }) => {
+  const persist = (p: { budget: Budget; mood: Mood; prepTime: PrepTime; mealType: ToggleValue; diets: Diet[] }) => {
     localStorage.setItem("wsie-budget", p.budget);
     localStorage.setItem("wsie-mood", p.mood);
     localStorage.setItem("wsie-prepTime", p.prepTime);
     localStorage.setItem("wsie-mealType", p.mealType);
+    localStorage.setItem("wsie-diets", JSON.stringify(p.diets));
   };
 
   const goBack = () => {
     haptic("light");
     setDirection(-1);
     if (step === "method") setStep("mood");
-    else if (step === "budget") setStep("method");
+    else if (step === "diet") setStep("method");
+    else if (step === "budget") setStep("diet");
     else if (step === "time") setStep("budget");
   };
 
-  const stepIndex = { mood: 0, method: 1, budget: 2, time: 3 };
-  const totalSteps = mealType === "order" ? 3 : 4;
-  const currentStep = stepIndex[step] + 1;
+  const stepOrder: Step[] = mealType === "order"
+    ? ["mood", "method", "diet", "budget"]
+    : ["mood", "method", "diet", "budget", "time"];
+  const currentStep = stepOrder.indexOf(step) + 1;
+  const totalSteps = stepOrder.length;
 
   const variants = {
     enter: (dir: number) => ({ opacity: 0, x: dir * 80 }),
@@ -106,20 +101,29 @@ export default function HomeScreen({ onDecide }: HomeScreenProps) {
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="text-center mb-10"
+        className="text-center mb-8"
       >
         <motion.div
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 12, delay: 0.1 }}
-          className="text-4xl mb-3"
+          className="text-4xl mb-2"
         >
-          🍽️
+          {emoji}
         </motion.div>
-        <h1 className="font-display text-3xl font-bold text-foreground tracking-tight">
-          What Should I Eat?
+        <h1 className="font-display text-2xl font-bold text-foreground tracking-tight">
+          {greeting}!
         </h1>
-        <p className="text-muted-foreground mt-1.5 text-base">{subtitle}</p>
+        <p className="text-muted-foreground mt-1 text-sm">What should you eat?</p>
+        {streak > 1 && (
+          <motion.p
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-xs text-primary font-semibold mt-2"
+          >
+            🔥 {streak}-day streak
+          </motion.p>
+        )}
       </motion.div>
 
       <div className="w-full max-w-sm">
@@ -184,16 +188,36 @@ export default function HomeScreen({ onDecide }: HomeScreenProps) {
                   { value: "order" as const, emoji: "📱", label: "Just order", desc: "Let someone else do the work" },
                   { value: "any" as const, emoji: "🤷", label: "Either works", desc: "I'm flexible" },
                 ]).map((opt) => (
-                  <BigOption
-                    key={opt.value}
-                    selected={mealType === opt.value}
-                    onClick={() => selectMethod(opt.value)}
-                    emoji={opt.emoji}
-                    label={opt.label}
-                    desc={opt.desc}
-                  />
+                  <BigOption key={opt.value} selected={mealType === opt.value} onClick={() => selectMethod(opt.value)} emoji={opt.emoji} label={opt.label} desc={opt.desc} />
                 ))}
               </div>
+            </StepContainer>
+          )}
+
+          {step === "diet" && (
+            <StepContainer key="diet" direction={direction} variants={variants}>
+              <StepTitle>Any dietary needs? 🌱</StepTitle>
+              <StepSubtitle>Select all that apply, or skip</StepSubtitle>
+              <div className="flex flex-wrap gap-2.5 mt-6">
+                {([
+                  { value: "vegan" as Diet, label: "🌱 Vegan" },
+                  { value: "vegetarian" as Diet, label: "🥚 Vegetarian" },
+                  { value: "gluten-free" as Diet, label: "🌾 Gluten-free" },
+                  { value: "dairy-free" as Diet, label: "🥛 Dairy-free" },
+                  { value: "keto" as Diet, label: "🥑 Keto" },
+                ]).map((opt) => (
+                  <Chip key={opt.value} selected={diets.includes(opt.value)} onClick={() => toggleDiet(opt.value)}>
+                    {opt.label}
+                  </Chip>
+                ))}
+              </div>
+              <motion.button
+                whileTap={{ scale: 0.96 }}
+                onClick={handleDietNext}
+                className="w-full mt-6 py-4 min-h-[52px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-colors"
+              >
+                {diets.length > 0 ? "Next →" : "Skip — I eat everything"}
+              </motion.button>
             </StepContainer>
           )}
 
@@ -207,14 +231,7 @@ export default function HomeScreen({ onDecide }: HomeScreenProps) {
                   { value: "$$" as const, label: "Moderate", desc: "$5–15 · The sweet spot" },
                   { value: "$$$" as const, label: "Treat yourself", desc: "$15+ · You deserve it" },
                 ]).map((opt) => (
-                  <BigOption
-                    key={opt.value}
-                    selected={budget === opt.value}
-                    onClick={() => selectBudget(opt.value)}
-                    emoji={opt.value}
-                    label={opt.label}
-                    desc={opt.desc}
-                  />
+                  <BigOption key={opt.value} selected={budget === opt.value} onClick={() => selectBudget(opt.value)} emoji={opt.value} label={opt.label} desc={opt.desc} />
                 ))}
               </div>
             </StepContainer>
@@ -230,14 +247,7 @@ export default function HomeScreen({ onDecide }: HomeScreenProps) {
                   { value: "15" as const, label: "15 minutes", desc: "Quick and easy" },
                   { value: "30+" as const, label: "30+ minutes", desc: "Worth the wait" },
                 ]).map((opt) => (
-                  <BigOption
-                    key={opt.value}
-                    selected={prepTime === opt.value}
-                    onClick={() => selectTime(opt.value)}
-                    emoji="⏱️"
-                    label={opt.label}
-                    desc={opt.desc}
-                  />
+                  <BigOption key={opt.value} selected={prepTime === opt.value} onClick={() => selectTime(opt.value)} emoji="⏱️" label={opt.label} desc={opt.desc} />
                 ))}
               </div>
             </StepContainer>
@@ -250,14 +260,7 @@ export default function HomeScreen({ onDecide }: HomeScreenProps) {
 
 function StepContainer({ children, direction, variants }: { children: React.ReactNode; direction: number; variants: any }) {
   return (
-    <motion.div
-      custom={direction}
-      variants={variants}
-      initial="enter"
-      animate="center"
-      exit="exit"
-      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-    >
+    <motion.div custom={direction} variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}>
       {children}
     </motion.div>
   );
@@ -277,9 +280,7 @@ function Chip({ selected, onClick, children }: { selected: boolean; onClick: () 
       whileTap={{ scale: 0.93 }}
       onClick={onClick}
       className={`px-5 py-3.5 min-h-[48px] rounded-2xl text-base font-medium transition-colors ${
-        selected
-          ? "bg-foreground text-background shadow-md"
-          : "bg-secondary text-secondary-foreground"
+        selected ? "bg-foreground text-background shadow-md" : "bg-secondary text-secondary-foreground"
       }`}
     >
       {children}
@@ -287,17 +288,13 @@ function Chip({ selected, onClick, children }: { selected: boolean; onClick: () 
   );
 }
 
-function BigOption({ selected, onClick, emoji, label, desc }: {
-  selected: boolean; onClick: () => void; emoji: string; label: string; desc: string;
-}) {
+function BigOption({ selected, onClick, emoji, label, desc }: { selected: boolean; onClick: () => void; emoji: string; label: string; desc: string }) {
   return (
     <motion.button
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
       className={`w-full flex items-center gap-4 p-4 min-h-[64px] rounded-2xl text-left transition-all border ${
-        selected
-          ? "bg-foreground text-background border-foreground shadow-md"
-          : "bg-card text-card-foreground border-border"
+        selected ? "bg-foreground text-background border-foreground shadow-md" : "bg-card text-card-foreground border-border"
       }`}
     >
       <span className="text-2xl">{emoji}</span>

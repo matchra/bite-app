@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import HomeScreen from "@/components/HomeScreen";
 import ResultScreen from "@/components/ResultScreen";
@@ -6,8 +6,9 @@ import SavedMeals from "@/components/SavedMeals";
 import SettingsScreen from "@/components/SettingsScreen";
 import BottomTabBar, { Tab } from "@/components/BottomTabBar";
 import { PrivacyPolicy, TermsOfService, ContactSupport } from "@/components/LegalPage";
-import { Meal, UserPreferences, recommendMeal } from "@/data/meals";
+import { Meal, UserPreferences, recommendMeal, Diet } from "@/data/meals";
 import { haptic } from "@/lib/haptics";
+import { updateStreak, shouldShowLunchReminder, dismissLunchReminder, sendNotification } from "@/lib/streak";
 
 type View = "home" | "result" | "saved" | "settings" | "privacy" | "terms" | "contact";
 
@@ -29,6 +30,21 @@ export default function Index() {
   const [excluded, setExcluded] = useState<string[]>([]);
   const [saved, setSaved] = useState<Meal[]>(loadSaved);
   const [shuffleCount, setShuffleCount] = useState(0);
+  const [streak, setStreak] = useState(0);
+
+  // Update streak on mount
+  useEffect(() => {
+    const s = updateStreak();
+    setStreak(s.count);
+  }, []);
+
+  // Check for lunch reminder
+  useEffect(() => {
+    if (shouldShowLunchReminder()) {
+      dismissLunchReminder();
+      sendNotification("🍽️ Lunchtime!", "Need help deciding what to eat?");
+    }
+  }, []);
 
   const persistSaved = (meals: Meal[]) => {
     setSaved(meals);
@@ -86,7 +102,7 @@ export default function Index() {
           exit="exit"
           transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
         >
-          {view === "home" && <HomeScreen onDecide={handleDecide} />}
+          {view === "home" && <HomeScreen onDecide={handleDecide} streak={streak} />}
           {view === "result" && currentMeal && prefs && (
             <ResultScreen
               meal={currentMeal}
@@ -100,7 +116,7 @@ export default function Index() {
             />
           )}
           {view === "saved" && <SavedMeals meals={saved} onRemove={handleRemove} />}
-          {view === "settings" && <SettingsScreen onNavigate={(page) => setView(page)} />}
+          {view === "settings" && <SettingsScreen onNavigate={(page) => setView(page)} streak={streak} />}
           {view === "privacy" && <PrivacyPolicy onBack={() => setView("settings")} />}
           {view === "terms" && <TermsOfService onBack={() => setView("settings")} />}
           {view === "contact" && <ContactSupport onBack={() => setView("settings")} />}
