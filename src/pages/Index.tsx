@@ -139,7 +139,7 @@ export default function Index() {
               budget={prefs.budget}
               onShuffle={handleShuffle}
               onSave={handleSave}
-              onDone={() => setView("home")}
+              onDone={(meal) => { addToHistory(meal); setView("home"); }}
               isSaved={saved.some((m) => m.id === currentMeal.id)}
               shuffleCount={shuffleCount}
             />
