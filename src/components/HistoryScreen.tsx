@@ -1,6 +1,8 @@
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, Trash2 } from "lucide-react";
+import { Clock, ChevronRight, Sparkles } from "lucide-react";
 import { haptic } from "@/lib/haptics";
+import { Meal } from "@/data/meals";
 
 export interface HistoryEntry {
   id: string;
@@ -8,12 +10,14 @@ export interface HistoryEntry {
   mealName: string;
   mealEmoji: string;
   mealDescription: string;
+  mealMood?: string;
   chosenAt: string; // ISO date string
 }
 
 interface HistoryScreenProps {
   entries: HistoryEntry[];
   onClear: () => void;
+  onRepick: (mealId: string) => void;
 }
 
 function formatDate(iso: string): string {
@@ -34,7 +38,47 @@ function formatDate(iso: string): string {
   return date.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
 }
 
-export default function HistoryScreen({ entries, onClear }: HistoryScreenProps) {
+// Fun stats computation
+function computeStats(entries: HistoryEntry[]) {
+  if (entries.length < 3) return null;
+
+  // Most picked meal
+  const mealCounts = new Map<string, { name: string; emoji: string; count: number }>();
+  entries.forEach((e) => {
+    const existing = mealCounts.get(e.mealId);
+    if (existing) existing.count++;
+    else mealCounts.set(e.mealId, { name: e.mealName, emoji: e.mealEmoji, count: 1 });
+  });
+  const topMeal = [...mealCounts.values()].sort((a, b) => b.count - a.count)[0];
+
+  // Mood distribution
+  const moodCounts = new Map<string, number>();
+  entries.forEach((e) => {
+    if (e.mealMood) {
+      moodCounts.set(e.mealMood, (moodCounts.get(e.mealMood) || 0) + 1);
+    }
+  });
+  const topMood = [...moodCounts.entries()].sort(([, a], [, b]) => b - a)[0];
+
+  // Personality
+  const personalities: Record<string, { label: string; emoji: string }> = {
+    comfort: { label: "Comfort Creature", emoji: "🛋️" },
+    quick: { label: "Speed Eater", emoji: "⚡" },
+    healthy: { label: "Health Nut", emoji: "🥬" },
+    "high-protein": { label: "Gym Bro", emoji: "💪" },
+    any: { label: "Wildcard", emoji: "🎲" },
+  };
+  const personality = topMood ? personalities[topMood[0]] || { label: "Foodie", emoji: "🍽️" } : { label: "Explorer", emoji: "🧭" };
+
+  // Percentage
+  const topMoodPct = topMood ? Math.round((topMood[1] / entries.length) * 100) : 0;
+
+  return { topMeal, personality, topMoodPct, totalMeals: entries.length };
+}
+
+export default function HistoryScreen({ entries, onClear, onRepick }: HistoryScreenProps) {
+  const stats = computeStats(entries);
+
   return (
     <div className="px-5 pt-safe pb-28 max-w-lg mx-auto">
       <div className="pt-6 mb-4">
@@ -56,6 +100,44 @@ export default function HistoryScreen({ entries, onClear }: HistoryScreenProps) 
         )}
       </div>
 
+      {/* Fun stats card */}
+      {stats && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-card rounded-2xl border border-border p-4 mb-5 overflow-hidden relative"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.04] to-transparent pointer-events-none" />
+          <div className="flex items-center gap-2 mb-3 relative z-10">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <p className="text-xs font-semibold text-primary uppercase tracking-wider">Your Food Personality</p>
+          </div>
+          <div className="flex items-center gap-3 mb-3 relative z-10">
+            <span className="text-3xl">{stats.personality.emoji}</span>
+            <div>
+              <p className="font-display font-bold text-lg text-card-foreground">{stats.personality.label}</p>
+              {stats.topMoodPct > 0 && (
+                <p className="text-xs text-muted-foreground">{stats.topMoodPct}% of your picks are this vibe</p>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-3 relative z-10">
+            <div className="flex-1 bg-secondary rounded-xl p-2.5 text-center">
+              <p className="text-lg font-bold text-card-foreground">{stats.totalMeals}</p>
+              <p className="text-[10px] text-muted-foreground">meals decided</p>
+            </div>
+            {stats.topMeal && stats.topMeal.count > 1 && (
+              <div className="flex-1 bg-secondary rounded-xl p-2.5 text-center">
+                <p className="text-lg">{stats.topMeal.emoji}</p>
+                <p className="text-[10px] text-muted-foreground truncate">
+                  {stats.topMeal.name} ×{stats.topMeal.count}
+                </p>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
+
       {entries.length === 0 ? (
         <div className="text-center mt-16">
           <motion.div
@@ -73,14 +155,15 @@ export default function HistoryScreen({ entries, onClear }: HistoryScreenProps) 
         <div className="space-y-2">
           <AnimatePresence mode="popLayout">
             {entries.map((entry, i) => (
-              <motion.div
+              <motion.button
                 key={entry.id}
                 layout
                 initial={{ opacity: 0, y: 12, scale: 0.96 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, x: -80, scale: 0.9 }}
                 transition={{ delay: i * 0.03, type: "spring", stiffness: 300, damping: 25 }}
-                className="flex items-center gap-3 bg-card rounded-2xl p-4 border border-border"
+                onClick={() => { haptic("light"); onRepick(entry.mealId); }}
+                className="w-full flex items-center gap-3 bg-card rounded-2xl p-4 border border-border text-left active:bg-muted/50 transition-colors"
               >
                 <motion.span className="text-2xl" whileTap={{ scale: 1.3, rotate: 10 }}>
                   {entry.mealEmoji}
@@ -94,7 +177,8 @@ export default function HistoryScreen({ entries, onClear }: HistoryScreenProps) 
                     {formatDate(entry.chosenAt)}
                   </p>
                 </div>
-              </motion.div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              </motion.button>
             ))}
           </AnimatePresence>
         </div>
