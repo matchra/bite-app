@@ -82,7 +82,7 @@ const testimonials = [
 /* ──────────────────── Landing page ──────────────────── */
 export default function LandingPage() {
   return (
-    <div className="bg-background text-foreground overflow-x-hidden">
+    <div className="bg-background text-foreground overflow-x-hidden" data-v="2">
 
       {/* ────── HERO ────── */}
       <section className="relative min-h-[100dvh] flex flex-col items-center justify-center px-6 pt-16 pb-12 text-center">
