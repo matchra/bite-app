@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import HomeScreen from "@/components/HomeScreen";
 import ResultScreen from "@/components/ResultScreen";
 import SavedMeals from "@/components/SavedMeals";
+import HistoryScreen, { HistoryEntry } from "@/components/HistoryScreen";
 import SettingsScreen from "@/components/SettingsScreen";
 import BottomTabBar, { Tab } from "@/components/BottomTabBar";
 import { PrivacyPolicy, TermsOfService, ContactSupport } from "@/components/LegalPage";
@@ -10,7 +11,7 @@ import { Meal, UserPreferences, recommendMeal, Diet } from "@/data/meals";
 import { haptic } from "@/lib/haptics";
 import { updateStreak, shouldShowLunchReminder, dismissLunchReminder, sendNotification } from "@/lib/streak";
 
-type View = "home" | "result" | "saved" | "settings" | "privacy" | "terms" | "contact";
+type View = "home" | "result" | "saved" | "history" | "settings" | "privacy" | "terms" | "contact";
 
 function loadSaved(): Meal[] {
   try { return JSON.parse(localStorage.getItem("wsie-saved") || "[]"); }
