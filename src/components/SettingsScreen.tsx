@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronRight, FileText, Shield, Mail, Info, Bell, BellOff, Sun, Moon, Trash2, Download } from "lucide-react";
+import { ChevronRight, FileText, Shield, Mail, Info, Bell, BellOff, Sun, Moon, Trash2, Download, Globe } from "lucide-react";
 import { getNotificationStatus, requestNotificationPermission } from "@/lib/streak";
 import { haptic } from "@/lib/haptics";
 import { motion } from "framer-motion";
@@ -94,7 +94,7 @@ export default function SettingsScreen({ onNavigate, streak, totalDecided }: Set
             <div className="text-3xl">🍽️</div>
             <div className="flex-1">
               <p className="font-display font-bold text-card-foreground">Bite</p>
-              <p className="text-xs text-muted-foreground">Version 1.2.0</p>
+              <p className="text-xs text-muted-foreground">Version 1.3.0</p>
             </div>
             <div className="flex gap-3 text-right">
               {streak > 0 && (
@@ -221,6 +221,7 @@ export default function SettingsScreen({ onNavigate, streak, totalDecided }: Set
           <SettingsRow icon={Shield} label="Privacy Policy" onClick={() => onNavigate("privacy")} />
           <SettingsRow icon={FileText} label="Terms of Service" onClick={() => onNavigate("terms")} />
           <SettingsRow icon={Mail} label="Contact & Support" onClick={() => onNavigate("contact")} />
+          <SettingsRow icon={Globe} label="Website" onClick={() => window.open("https://usebiteapp.com", "_blank")} />
         </div>
       </div>
     </div>

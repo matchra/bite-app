@@ -27,15 +27,17 @@ export function PrivacyPolicy({ onBack }: { onBack: () => void }) {
     <LegalPage title="Privacy Policy" onBack={onBack}>
       <p className="text-sm text-muted-foreground">Last updated: March 2026</p>
       <h3 className="font-display font-semibold text-base text-foreground">Overview</h3>
-      <p className="text-sm text-foreground/80">What Should I Eat? is committed to protecting your privacy. This app does not collect, store, or transmit any personal data to external servers.</p>
+      <p className="text-sm text-foreground/80">Bite is committed to protecting your privacy. This app does not collect, store, or transmit any personal data to external servers.</p>
       <h3 className="font-display font-semibold text-base text-foreground">Data Collection</h3>
       <p className="text-sm text-foreground/80">We do not collect any personal information. All preferences and saved meals are stored locally on your device using browser storage.</p>
-      <h3 className="font-display font-semibold text-base text-foreground">Third-Party Services</h3>
-      <p className="text-sm text-foreground/80">This app does not use any third-party analytics, advertising, or tracking services.</p>
+      <h3 className="font-display font-semibold text-base text-foreground">Affiliate Links & Monetization</h3>
+      <p className="text-sm text-foreground/80">Bite may display affiliate links to food delivery and grocery services. These are clearly labeled. We may earn a small commission at no extra cost to you.</p>
+      <h3 className="font-display font-semibold text-base text-foreground">Analytics</h3>
+      <p className="text-sm text-foreground/80">We may use lightweight, anonymous analytics to understand app usage. No personal data is collected.</p>
       <h3 className="font-display font-semibold text-base text-foreground">Data Storage</h3>
       <p className="text-sm text-foreground/80">Your saved meals and preferences are stored exclusively in your device's local storage. Clearing your browser data will remove this information.</p>
       <h3 className="font-display font-semibold text-base text-foreground">Contact</h3>
-      <p className="text-sm text-foreground/80">If you have questions about this privacy policy, please contact us at support@whatshouldeat.app</p>
+      <p className="text-sm text-foreground/80">If you have questions, contact us at <a href="mailto:hello@usebiteapp.com" className="text-primary underline">hello@usebiteapp.com</a></p>
     </LegalPage>
   );
 }
@@ -45,13 +47,17 @@ export function TermsOfService({ onBack }: { onBack: () => void }) {
     <LegalPage title="Terms of Service" onBack={onBack}>
       <p className="text-sm text-muted-foreground">Last updated: March 2026</p>
       <h3 className="font-display font-semibold text-base text-foreground">Acceptance</h3>
-      <p className="text-sm text-foreground/80">By using What Should I Eat?, you agree to these terms. If you disagree, please discontinue use of the app.</p>
+      <p className="text-sm text-foreground/80">By using Bite, you agree to these terms. If you disagree, please discontinue use of the app.</p>
       <h3 className="font-display font-semibold text-base text-foreground">Service Description</h3>
-      <p className="text-sm text-foreground/80">What Should I Eat? provides meal suggestions based on your preferences. Suggestions are for informational purposes only and do not constitute dietary or nutritional advice.</p>
+      <p className="text-sm text-foreground/80">Bite provides meal suggestions based on your preferences. Suggestions are for informational and entertainment purposes only and do not constitute dietary or nutritional advice.</p>
+      <h3 className="font-display font-semibold text-base text-foreground">Third-Party Links</h3>
+      <p className="text-sm text-foreground/80">The app may contain affiliate links to third-party services. We are not responsible for their content or practices.</p>
       <h3 className="font-display font-semibold text-base text-foreground">Disclaimer</h3>
       <p className="text-sm text-foreground/80">The app is provided "as is" without warranties of any kind. We are not responsible for any dietary decisions made based on app suggestions. Please consider any food allergies or dietary restrictions.</p>
       <h3 className="font-display font-semibold text-base text-foreground">Modifications</h3>
-      <p className="text-sm text-foreground/80">We reserve the right to modify these terms at any time. Continued use after changes constitutes acceptance of the new terms.</p>
+      <p className="text-sm text-foreground/80">We reserve the right to modify these terms at any time. Continued use after changes constitutes acceptance.</p>
+      <h3 className="font-display font-semibold text-base text-foreground">Contact</h3>
+      <p className="text-sm text-foreground/80">Questions? Contact us at <a href="mailto:hello@usebiteapp.com" className="text-primary underline">hello@usebiteapp.com</a></p>
     </LegalPage>
   );
 }
@@ -64,7 +70,11 @@ export function ContactSupport({ onBack }: { onBack: () => void }) {
       <div className="bg-muted rounded-2xl p-4 space-y-3">
         <div>
           <p className="text-xs font-medium text-muted-foreground">Email</p>
-          <p className="text-sm text-foreground">support@whatshouldeat.app</p>
+          <a href="mailto:hello@usebiteapp.com" className="text-sm text-primary font-medium">hello@usebiteapp.com</a>
+        </div>
+        <div>
+          <p className="text-xs font-medium text-muted-foreground">Website</p>
+          <a href="https://usebiteapp.com" className="text-sm text-primary font-medium">usebiteapp.com</a>
         </div>
         <div>
           <p className="text-xs font-medium text-muted-foreground">Response Time</p>
@@ -72,9 +82,10 @@ export function ContactSupport({ onBack }: { onBack: () => void }) {
         </div>
       </div>
       <h3 className="font-display font-semibold text-base text-foreground">FAQ</h3>
-      <p className="text-sm text-foreground/80"><strong>Is my data safe?</strong> Yes. All data is stored locally on your device. We don't collect or transmit any information.</p>
-      <p className="text-sm text-foreground/80"><strong>Do I need an account?</strong> No. The app works without any sign-up or login.</p>
+      <p className="text-sm text-foreground/80"><strong>Is my data safe?</strong> Yes. All data is stored locally on your device.</p>
+      <p className="text-sm text-foreground/80"><strong>Do I need an account?</strong> No. Bite works without any sign-up or login.</p>
       <p className="text-sm text-foreground/80"><strong>Can I request new meals?</strong> Absolutely! Send us an email with your suggestions.</p>
+      <p className="text-sm text-foreground/80"><strong>Is Bite free?</strong> Yes, completely free to use.</p>
     </LegalPage>
   );
 }

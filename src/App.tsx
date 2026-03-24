@@ -8,12 +8,14 @@ import SplashScreen from "@/components/SplashScreen";
 import Index from "./pages/Index.tsx";
 import LandingPage from "./pages/LandingPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import { PrivacyPolicyPage, TermsPage, ContactPage } from "@/pages/LegalPages.tsx";
 
 const queryClient = new QueryClient();
 
 function AppRoutes() {
   const location = useLocation();
-  const [showSplash, setShowSplash] = useState(location.pathname === "/app");
+  const isAppRoute = location.pathname === "/app" || location.pathname === "/try";
+  const [showSplash, setShowSplash] = useState(isAppRoute);
 
   return (
     <>
@@ -21,7 +23,10 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/app" element={<Index />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="/try" element={<Index />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
