@@ -15,6 +15,7 @@ export interface Meal {
   budget: Budget;
   type: MealType;
   ingredients: string[];
+  instructions?: string[];
   tags: string[];
   diets: Diet[];
   mealTimes: MealTime[];
