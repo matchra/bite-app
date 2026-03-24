@@ -35,6 +35,7 @@ export default function Index() {
   const [prefs, setPrefs] = useState<UserPreferences | null>(null);
   const [excluded, setExcluded] = useState<string[]>([]);
   const [saved, setSaved] = useState<Meal[]>(loadSaved);
+  const [history, setHistory] = useState<HistoryEntry[]>(loadHistory);
   const [shuffleCount, setShuffleCount] = useState(0);
   const [streak, setStreak] = useState(0);
 
