@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import appIcon from "@/assets/app-icon-base.png";
+import appIcon from "@/assets/app-icon-full.png";
 
 interface SplashScreenProps {
   onFinish: () => void;
