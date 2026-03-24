@@ -50,8 +50,18 @@ function getMealImageQuery(meal: Meal): string {
 export default function MealImage({ meal }: MealImageProps) {
   const [imgError, setImgError] = useState(false);
   const query = getMealImageQuery(meal);
-  // Use Unsplash source for a consistent food photo
-  const imgUrl = `https://source.unsplash.com/400x240/?${encodeURIComponent(query)},food`;
+  // Use Loremflickr for food images (Unsplash source is deprecated)
+  const imgUrl = `https://loremflickr.com/400/240/${encodeURIComponent(query)},food`;
+
+  // Fallback colors based on meal mood/type
+  const fallbackColors: Record<string, string> = {
+    quick: "from-amber-100 to-orange-200",
+    healthy: "from-green-100 to-emerald-200",
+    comfort: "from-orange-100 to-red-200",
+    "high-protein": "from-red-100 to-rose-200",
+    any: "from-muted to-secondary",
+  };
+  const moodColor = fallbackColors[meal.moods[0]] || fallbackColors.any;
 
   return (
     <div className="relative w-full aspect-[5/3] bg-muted overflow-hidden">
@@ -68,15 +78,11 @@ export default function MealImage({ meal }: MealImageProps) {
           loading="eager"
         />
       ) : (
-        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-secondary">
-          <motion.span
-            initial={{ scale: 0.6 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 300, damping: 15 }}
-            className="text-6xl"
-          >
+        <div className={`w-full h-full flex flex-col items-center justify-center bg-gradient-to-br ${moodColor}`}>
+          <span className="text-5xl mb-2" role="img" aria-label={meal.name}>
             {meal.emoji}
-          </motion.span>
+          </span>
+          <span className="text-sm font-medium text-foreground/60">{meal.name}</span>
         </div>
       )}
       {/* Gradient overlay for text readability */}
