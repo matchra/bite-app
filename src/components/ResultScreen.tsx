@@ -222,7 +222,7 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
             transition={{ delay: 0.35 }}
             whileTap={{ scale: 0.96 }}
             onClick={handleDone}
-            className="w-full mt-3 py-3.5 min-h-[48px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-colors"
+            className="w-full mt-3 py-3.5 min-h-[48px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-all duration-200 ease-out"
           >
             Let's eat! 🍴
           </motion.button>
