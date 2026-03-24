@@ -91,7 +91,7 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
           className="w-full max-w-sm"
         >
-          <div className="bg-card rounded-3xl p-6 shadow-xl border border-border overflow-hidden relative">
+          <div className="bg-card rounded-3xl p-6 shadow-xl border border-border relative">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent pointer-events-none" />
 
             <motion.div key={`emoji-${meal.id}`} initial={{ scale: 0, rotate: -20, y: 20 }} animate={{ scale: 1, rotate: 0, y: 0 }} transition={{ type: "spring", stiffness: 400, damping: 12, delay: 0.08 }} className="text-7xl text-center mb-4 relative z-10">

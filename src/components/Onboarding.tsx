@@ -54,7 +54,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       {/* Skip */}
       <button
         onClick={handleSkip}
-        className="absolute top-safe right-4 mt-4 text-sm text-muted-foreground active:text-foreground transition-colors px-3 py-2 min-h-[44px]"
+        className="absolute top-4 right-4 mt-safe text-sm text-muted-foreground active:text-foreground transition-colors px-3 py-2 min-h-[44px] z-10"
       >
         Skip
       </button>
