@@ -193,7 +193,7 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
               <Share2 className="w-4 h-4" />
             </motion.button>
 
-            <motion.button whileTap={{ scale: 0.93 }} onClick={handleSave} className={`flex items-center justify-center px-4 py-3.5 min-h-[48px] rounded-2xl font-medium transition-all ${isSaved ? "bg-success/10 text-success" : "bg-secondary text-secondary-foreground active:bg-secondary/70"}`}>
+            <motion.button whileTap={{ scale: 0.93 }} onClick={handleSave} className={`flex items-center justify-center px-4 py-3.5 min-h-[48px] rounded-2xl font-medium transition-all duration-200 ease-out ${isSaved ? "bg-success/10 text-success" : "bg-secondary text-secondary-foreground active:bg-secondary/70"}`}>
               <AnimatePresence mode="wait">
                 {isSaved ? (
                   <motion.div key="saved" initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
