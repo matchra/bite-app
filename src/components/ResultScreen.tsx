@@ -158,12 +158,14 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
 
           {/* Actions */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="flex gap-2.5 mt-5">
-            <motion.button whileTap={{ scale: 0.93 }} onClick={handleShuffle} className="flex-1 flex items-center justify-center gap-2 py-3.5 min-h-[48px] rounded-2xl bg-secondary text-secondary-foreground font-medium active:bg-secondary/70 transition-colors">
-              <motion.div key={`spin-${shuffleCount}`} animate={{ rotate: shuffleCount > 0 ? 360 : 0 }} transition={{ duration: 0.4 }}>
-                <RefreshCw className="w-4 h-4" />
-              </motion.div>
-              Nah, next
-            </motion.button>
+            {onShuffle && (
+              <motion.button whileTap={{ scale: 0.93 }} onClick={handleShuffle} className="flex-1 flex items-center justify-center gap-2 py-3.5 min-h-[48px] rounded-2xl bg-secondary text-secondary-foreground font-medium active:bg-secondary/70 transition-colors">
+                <motion.div key={`spin-${shuffleCount}`} animate={{ rotate: shuffleCount > 0 ? 360 : 0 }} transition={{ duration: 0.4 }}>
+                  <RefreshCw className="w-4 h-4" />
+                </motion.div>
+                Nah, next
+              </motion.button>
+            )}
 
             <motion.button whileTap={{ scale: 0.93 }} onClick={handleShare} className="flex items-center justify-center px-4 py-3.5 min-h-[48px] rounded-2xl bg-secondary text-secondary-foreground active:bg-secondary/70 transition-colors">
               <Share2 className="w-4 h-4" />
