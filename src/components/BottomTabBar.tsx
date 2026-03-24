@@ -11,6 +11,7 @@ interface BottomTabBarProps {
 const tabs: { id: Tab; label: string; icon: typeof Home }[] = [
   { id: "home", label: "Home", icon: Home },
   { id: "saved", label: "Saved", icon: Bookmark },
+  { id: "history", label: "History", icon: Clock },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
