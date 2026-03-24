@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Bite',
   webDir: 'dist',
   server: {
-    url: 'https://05ac9fb4-8719-4799-a219-b762091bb3f4.lovableproject.com?forceHideBadge=true',
+    url: 'https://bite-app.lovable.app',
     cleartext: true
   }
 };
