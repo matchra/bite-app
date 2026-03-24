@@ -146,7 +146,7 @@ export const meals: Meal[] = [
   { id: "106", name: "Avocado Sushi Roll", emoji: "🍣", description: "Simple, fresh, clean.", moods: ["healthy", "quick"], prepTime: "15", budget: "$$", type: "order", ingredients: [], tags: [], diets: ["vegan", "gluten-free", "dairy-free"], mealTimes: ["lunch", "dinner"] },
   { id: "107", name: "Korean Fried Chicken", emoji: "🍗", description: "Double-fried, saucy, addictive.", moods: ["comfort", "high-protein"], prepTime: "30+", budget: "$$", type: "order", ingredients: [], tags: ["high-protein"], diets: ["dairy-free"], mealTimes: ["dinner"] },
   { id: "108", name: "Elote (Street Corn)", emoji: "🌽", description: "Mexican street corn. Pure street-food magic.", moods: ["comfort", "quick"], prepTime: "15", budget: "$", type: "order", ingredients: [], tags: [], diets: ["vegetarian", "gluten-free"], mealTimes: ["snack"] },
-  { id: "109", name: "Lamb Gyro Plate", emoji: "🥩", description: "Seasoned lamb, warm pita, all the sides.", moods: ["comfort", "high-protein"], prepTime: "30+", budget: "$$$", type: "order", ingredients: [], tags: ["high-protein"], diets: [], mealTimes: ["dinner"] },
+  { id: "109", name: "Lamb Gyro Plate", emoji: "🥙", description: "Seasoned lamb, warm pita, all the sides.", moods: ["comfort", "high-protein"], prepTime: "30+", budget: "$$$", type: "order", ingredients: [], tags: ["high-protein"], diets: [], mealTimes: ["dinner"] },
   { id: "110", name: "Veggie Spring Rolls", emoji: "🥬", description: "Light, fresh, dip-worthy.", moods: ["healthy", "quick"], prepTime: "15", budget: "$", type: "order", ingredients: [], tags: [], diets: ["vegan", "gluten-free", "dairy-free"], mealTimes: ["lunch", "snack"] },
 ];
 
