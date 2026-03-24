@@ -1,4 +1,5 @@
 import { Home, UtensilsCrossed, Settings } from "lucide-react";
+import { motion } from "framer-motion";
 
 export type Tab = "home" | "myeats" | "settings";
 
@@ -25,21 +26,31 @@ export default function BottomTabBar({ active, onChange, savedCount }: BottomTab
             <button
               key={tab.id}
               onClick={() => onChange(tab.id)}
-              className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 min-h-[56px] transition-colors relative ${
-                isActive ? "text-primary" : "text-muted-foreground"
-              }`}
+              className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 min-h-[56px] transition-colors relative"
             >
               <div className="relative">
-                <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
+                <motion.div
+                  animate={{ scale: isActive ? 1 : 0.92, y: isActive ? -1 : 0 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 22 }}
+                >
+                  <Icon
+                    className={`w-5 h-5 transition-colors duration-200 ${isActive ? "text-primary" : "text-muted-foreground"}`}
+                    strokeWidth={isActive ? 2.5 : 2}
+                  />
+                </motion.div>
                 {tab.id === "myeats" && savedCount > 0 && (
                   <span className="absolute -top-1.5 -right-2.5 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-bold">
                     {savedCount > 9 ? "9+" : savedCount}
                   </span>
                 )}
               </div>
-              <span className={`text-[10px] font-medium ${isActive ? "text-primary" : "text-muted-foreground"}`}>
+              <motion.span
+                animate={{ opacity: isActive ? 1 : 0.6 }}
+                transition={{ duration: 0.2 }}
+                className={`text-[10px] font-medium transition-colors duration-200 ${isActive ? "text-primary" : "text-muted-foreground"}`}
+              >
                 {tab.label}
-              </span>
+              </motion.span>
             </button>
           );
         })}
