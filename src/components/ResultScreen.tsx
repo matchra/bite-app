@@ -5,7 +5,6 @@ import { Bookmark, RefreshCw, Check, Smartphone, Share2, MapPin, ShoppingCart, E
 import { haptic, hapticSuccess } from "@/lib/haptics";
 import { fireConfetti } from "@/lib/confetti";
 import MealImage from "@/components/MealImage";
-import NativeAd from "@/components/NativeAd";
 
 interface ResultScreenProps {
   meal: Meal;
@@ -115,6 +114,7 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
 
   // Shuffle ad interstitial
   if (showShuffleAd) {
+    const isOrderMeal = !isCook;
     return (
       <div className="flex flex-col items-center justify-center min-h-[100dvh] px-5 pt-safe pb-6 gap-6">
         <motion.p
@@ -124,7 +124,29 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
         >
           While you're deciding…
         </motion.p>
-        <NativeAd variant="interstitial" context={meal.name} />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-sm mx-auto"
+        >
+          <a
+            href={isOrderMeal ? buildDeliveryUrl(meal.name) : "https://www.hellofresh.com/"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block bg-card rounded-3xl border border-border p-6 text-center shadow-lg active:bg-muted/50 transition-colors"
+          >
+            <span className="text-4xl inline-block mb-3">{isOrderMeal ? "🚗" : "🥘"}</span>
+            <p className="font-display font-bold text-lg text-card-foreground">
+              {isOrderMeal ? "Skip the wait — order now" : "Try Hello Fresh"}
+            </p>
+            <p className="text-sm text-muted-foreground mt-1 mb-4">
+              {isOrderMeal ? "Get it delivered with Uber Eats" : "Fresh ingredients, easy recipes, delivered"}
+            </p>
+            <span className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-semibold">
+              {isOrderMeal ? "Order now" : "Get started"} <ExternalLink className="w-3.5 h-3.5" />
+            </span>
+          </a>
+        </motion.div>
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -280,8 +302,28 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
             </div>
           </div>
 
-          {/* Inline native ad below result card */}
-          <NativeAd variant="inline" context={meal.name} />
+          {/* Hello Fresh CTA for cooking meals */}
+          {isCook && (
+            <motion.a
+              href={`https://www.hellofresh.com/recipes?q=${encodeURIComponent(meal.name)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55 }}
+              onClick={() => haptic("light")}
+              className="block w-full mt-4"
+            >
+              <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-accent/50 border border-border active:bg-accent/70 transition-colors">
+                <span className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 text-lg">🥘</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-card-foreground">Try Hello Fresh</p>
+                  <p className="text-[10px] text-muted-foreground">Get pre-portioned ingredients delivered</p>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+              </div>
+            </motion.a>
+          )}
 
           {/* Actions */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="flex gap-2.5 mt-4">

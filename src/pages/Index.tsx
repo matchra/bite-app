@@ -91,6 +91,7 @@ export default function Index() {
 
   const handleTabChange = (tab: Tab) => {
     haptic("light");
+    window.scrollTo({ top: 0, behavior: "smooth" });
     if (tab === "home") setView(view === "result" ? "result" : "home");
     else if (tab === "myeats") setView("myeats");
     else setView("settings");
@@ -102,7 +103,7 @@ export default function Index() {
     setShuffleCount(0);
     setIsRepick(false);
     const meal = recommendMeal(p, []);
-    if (meal) { setCurrentMeal(meal); setView("result"); }
+    if (meal) { setCurrentMeal(meal); setView("result"); window.scrollTo({ top: 0 }); }
   }, []);
 
   // "Pick for me" — random meal with no filters
@@ -119,11 +120,12 @@ export default function Index() {
     setShuffleCount(0);
     setIsRepick(false);
     const meal = recommendMeal(randomPrefs, []);
-    if (meal) { setCurrentMeal(meal); setView("result"); }
+    if (meal) { setCurrentMeal(meal); setView("result"); window.scrollTo({ top: 0 }); }
   }, []);
 
   const handleShuffle = useCallback(() => {
     if (!prefs || !currentMeal) return;
+    window.scrollTo({ top: 0 });
     const newExcluded = [...excluded, currentMeal.id];
     setExcluded(newExcluded);
     setShuffleCount((c) => c + 1);
@@ -144,6 +146,7 @@ export default function Index() {
     setExcluded([]);
     setPrefs({ budget: meal.budget, mood: meal.moods[0] || "any", prepTime: meal.prepTime, mealType: meal.type, diets: meal.diets });
     setView("result");
+    window.scrollTo({ top: 0 });
   }, []);
 
   const handleSave = useCallback((meal: Meal) => {
@@ -187,7 +190,7 @@ export default function Index() {
               budget={prefs.budget}
               onShuffle={isRepick ? undefined : handleShuffle}
               onSave={handleSave}
-              onDone={(meal) => { addToHistory(meal); setView("home"); }}
+              onDone={(meal) => { addToHistory(meal); setView("home"); window.scrollTo({ top: 0 }); }}
               isSaved={saved.some((m) => m.id === currentMeal.id)}
               shuffleCount={shuffleCount}
             />
