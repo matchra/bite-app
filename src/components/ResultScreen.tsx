@@ -49,7 +49,7 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
   const handleDone = () => {
     haptic("heavy");
     fireConfetti();
-    setTimeout(onDone, 600);
+    setTimeout(() => onDone(meal), 600);
   };
 
   const handleShare = async () => {
