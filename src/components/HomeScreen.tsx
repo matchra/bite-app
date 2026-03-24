@@ -55,7 +55,7 @@ export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
   const selectMethod = (v: ToggleValue) => {
     haptic("light");
     setMealType(v);
-    const nextStep: Step = (v === "cook") ? "ingredients" : "diet";
+    const nextStep: Step = (v === "order") ? "diet" : "ingredients";
     setTimeout(() => { setDirection(1); setStep(nextStep); }, 200);
   };
 
