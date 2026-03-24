@@ -189,7 +189,7 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
               </motion.button>
             )}
 
-            <motion.button whileTap={{ scale: 0.93 }} onClick={handleShare} className="flex items-center justify-center px-4 py-3.5 min-h-[48px] rounded-2xl bg-secondary text-secondary-foreground active:bg-secondary/70 transition-colors">
+            <motion.button whileTap={{ scale: 0.93 }} onClick={handleShare} className="flex items-center justify-center px-4 py-3.5 min-h-[48px] rounded-2xl bg-secondary text-secondary-foreground active:bg-secondary/70 transition-all duration-200 ease-out">
               <Share2 className="w-4 h-4" />
             </motion.button>
 
