@@ -4,6 +4,7 @@ import { Meal, getCostLabel, getPrepLabel, getExplanation, Budget, Mood } from "
 import { Bookmark, RefreshCw, Check, Smartphone, Share2, MapPin } from "lucide-react";
 import { haptic, hapticSuccess } from "@/lib/haptics";
 import { fireConfetti } from "@/lib/confetti";
+import MealImage from "@/components/MealImage";
 
 interface ResultScreenProps {
   meal: Meal;
@@ -33,6 +34,9 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
   const explanation = getExplanation(mood, budget);
   const [justSaved, setJustSaved] = useState(false);
 
+  const isCook = meal.type === "cook";
+  const ctaLabel = isCook ? "Start cooking 🍳" : "Order now 📱";
+
   const handleSave = () => {
     if (isSaved) return;
     hapticSuccess();
@@ -43,7 +47,7 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
 
   const handleShuffle = () => {
     haptic("medium");
-    onShuffle();
+    onShuffle?.();
   };
 
   const handleDone = () => {
@@ -54,15 +58,11 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
 
   const handleShare = async () => {
     haptic("light");
-    const text = `${meal.emoji} I'm having ${meal.name}! ${meal.description}\n\nDecided with What Should I Eat?`;
+    const text = `${meal.emoji} I'm having ${meal.name}! ${meal.description}\n\nDecided with Bite`;
     if (navigator.share) {
-      try {
-        await navigator.share({ title: `I'm eating ${meal.name}!`, text });
-      } catch {}
+      try { await navigator.share({ title: `I'm eating ${meal.name}!`, text }); } catch {}
     } else {
-      try {
-        await navigator.clipboard.writeText(text);
-      } catch {}
+      try { await navigator.clipboard.writeText(text); } catch {}
     }
   };
 
@@ -91,91 +91,85 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
           className="w-full max-w-sm"
         >
-          <div className="bg-card rounded-3xl p-6 shadow-xl border border-border relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent pointer-events-none" />
+          <div className="bg-card rounded-3xl shadow-xl border border-border relative overflow-hidden">
+            {/* Food image */}
+            <MealImage meal={meal} />
 
-            <motion.div key={`emoji-${meal.id}`} initial={{ scale: 0, rotate: -20, y: 20 }} animate={{ scale: 1, rotate: 0, y: 0 }} transition={{ type: "spring", stiffness: 400, damping: 12, delay: 0.08 }} className="text-7xl text-center mb-4 relative z-10">
-              {meal.emoji}
-            </motion.div>
+            <div className="p-6 relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent pointer-events-none" />
 
-            <motion.h2 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="font-display text-2xl font-bold text-center text-card-foreground relative z-10">
-              {meal.name}
-            </motion.h2>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.22 }} className="text-muted-foreground text-center mt-2 text-sm relative z-10">
-              {meal.description}
-            </motion.p>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.28 }} className="text-xs text-center mt-3 italic text-muted-foreground/70 relative z-10">
-              "{explanation}"
-            </motion.p>
+              <motion.h2 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="font-display text-2xl font-bold text-center text-card-foreground relative z-10">
+                {meal.name}
+              </motion.h2>
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.22 }} className="text-muted-foreground text-center mt-2 text-sm relative z-10">
+                {meal.description}
+              </motion.p>
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.28 }} className="text-xs text-center mt-3 italic text-muted-foreground/70 relative z-10">
+                "{explanation}"
+              </motion.p>
 
-            <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex justify-center gap-3 mt-5 relative z-10">
-              <MetaBadge label={getPrepLabel(meal.prepTime)} />
-              <MetaBadge label={getCostLabel(meal.budget)} />
-              <MetaBadge label={meal.type === "cook" ? "🍳 Cook" : "📱 Order"} />
-            </motion.div>
-
-            {/* Diet badges */}
-            {meal.diets.length > 0 && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.33 }} className="flex justify-center gap-1.5 mt-3 relative z-10 flex-wrap">
-                {meal.diets.map((d) => (
-                  <span key={d} className="text-[10px] bg-success/10 text-success px-2 py-0.5 rounded-full font-medium capitalize">{d}</span>
-                ))}
+              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex justify-center gap-3 mt-4 relative z-10">
+                <MetaBadge label={getPrepLabel(meal.prepTime)} />
+                <MetaBadge label={getCostLabel(meal.budget)} />
+                <MetaBadge label={isCook ? "🍳 Cook" : "📱 Order"} />
               </motion.div>
-            )}
 
-            {meal.ingredients.length > 0 && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="mt-5 relative z-10">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">What you'll need</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {meal.ingredients.map((ing, i) => (
-                    <motion.span key={ing} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.38 + i * 0.03 }} className="text-xs bg-secondary text-secondary-foreground px-2.5 py-1.5 rounded-lg">
-                      {ing}
-                    </motion.span>
+              {meal.diets.length > 0 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.33 }} className="flex justify-center gap-1.5 mt-3 relative z-10 flex-wrap">
+                  {meal.diets.map((d) => (
+                    <span key={d} className="text-[10px] bg-success/10 text-success px-2 py-0.5 rounded-full font-medium capitalize">{d}</span>
                   ))}
-                </div>
-              </motion.div>
-            )}
+                </motion.div>
+              )}
 
-            {meal.instructions && meal.instructions.length > 0 && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.42 }} className="mt-5 relative z-10">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">How to make it</p>
-                <ol className="space-y-2">
-                  {meal.instructions.map((step, i) => (
-                    <motion.li
-                      key={i}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.45 + i * 0.06 }}
-                      className="flex gap-2.5 text-sm text-card-foreground"
-                    >
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center mt-0.5">
-                        {i + 1}
-                      </span>
-                      <span className="text-foreground/80 leading-relaxed">{step}</span>
-                    </motion.li>
-                  ))}
-                </ol>
-              </motion.div>
-            )}
-
-            {meal.type === "order" && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="mt-5 relative z-10">
-                {meal.ingredients.length === 0 && (
-                  <div className="text-center bg-muted/50 rounded-2xl p-4 mb-3">
-                    <Smartphone className="w-5 h-5 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground">Open your delivery app and search for <span className="font-semibold text-foreground">{meal.name}</span></p>
+              {meal.ingredients.length > 0 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="mt-5 relative z-10">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">What you'll need</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {meal.ingredients.map((ing, i) => (
+                      <motion.span key={ing} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.38 + i * 0.03 }} className="text-xs bg-secondary text-secondary-foreground px-2.5 py-1.5 rounded-lg">
+                        {ing}
+                      </motion.span>
+                    ))}
                   </div>
-                )}
-                <motion.button
-                  whileTap={{ scale: 0.96 }}
-                  onClick={handleNearMe}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium active:bg-secondary/70 transition-all duration-200 ease-out"
-                >
-                  <MapPin className="w-4 h-4" />
-                  Find {meal.name} near me
-                </motion.button>
-              </motion.div>
-            )}
+                </motion.div>
+              )}
+
+              {isCook && meal.instructions && meal.instructions.length > 0 && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.42 }} className="mt-5 relative z-10">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">How to make it</p>
+                  <ol className="space-y-2">
+                    {meal.instructions.map((step, i) => (
+                      <motion.li key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.45 + i * 0.06 }} className="flex gap-2.5 text-sm text-card-foreground">
+                        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center mt-0.5">
+                          {i + 1}
+                        </span>
+                        <span className="text-foreground/80 leading-relaxed">{step}</span>
+                      </motion.li>
+                    ))}
+                  </ol>
+                </motion.div>
+              )}
+
+              {!isCook && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="mt-5 relative z-10">
+                  {meal.ingredients.length === 0 && (
+                    <div className="text-center bg-muted/50 rounded-2xl p-4 mb-3">
+                      <Smartphone className="w-5 h-5 mx-auto text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground">Open your delivery app and search for <span className="font-semibold text-foreground">{meal.name}</span></p>
+                    </div>
+                  )}
+                  <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    onClick={handleNearMe}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium active:bg-secondary/70 transition-all duration-200 ease-out"
+                  >
+                    <MapPin className="w-4 h-4" />
+                    Find {meal.name} near me
+                  </motion.button>
+                </motion.div>
+              )}
+            </div>
           </div>
 
           {/* Actions */}
@@ -185,7 +179,7 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
                 <motion.div key={`spin-${shuffleCount}`} animate={{ rotate: shuffleCount > 0 ? 360 : 0 }} transition={{ duration: 0.4 }}>
                   <RefreshCw className="w-4 h-4" />
                 </motion.div>
-                Nah, next
+                Try another 🔁
               </motion.button>
             )}
 
@@ -211,7 +205,7 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
           <AnimatePresence>
             {justSaved && (
               <motion.p initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-xs text-success text-center mt-2 font-medium">
-                Saved! 🎉
+                Saved ✓
               </motion.p>
             )}
           </AnimatePresence>
@@ -224,7 +218,7 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
             onClick={handleDone}
             className="w-full mt-3 py-3.5 min-h-[48px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-all duration-200 ease-out"
           >
-            Let's eat! 🍴
+            {ctaLabel}
           </motion.button>
         </motion.div>
       </AnimatePresence>

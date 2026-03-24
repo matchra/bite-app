@@ -105,6 +105,23 @@ export default function Index() {
     if (meal) { setCurrentMeal(meal); setView("result"); }
   }, []);
 
+  // "Pick for me" — random meal with no filters
+  const handlePickForMe = useCallback(() => {
+    const randomPrefs: UserPreferences = {
+      budget: (["$", "$$", "$$$"] as const)[Math.floor(Math.random() * 3)],
+      mood: "any",
+      prepTime: (["5", "15", "30+"] as const)[Math.floor(Math.random() * 3)],
+      mealType: "any",
+      diets: [],
+    };
+    setPrefs(randomPrefs);
+    setExcluded([]);
+    setShuffleCount(0);
+    setIsRepick(false);
+    const meal = recommendMeal(randomPrefs, []);
+    if (meal) { setCurrentMeal(meal); setView("result"); }
+  }, []);
+
   const handleShuffle = useCallback(() => {
     if (!prefs || !currentMeal) return;
     const newExcluded = [...excluded, currentMeal.id];
@@ -155,7 +172,14 @@ export default function Index() {
           exit="exit"
           transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
         >
-          {view === "home" && <HomeScreen onDecide={handleDecide} streak={streak} />}
+          {view === "home" && (
+            <HomeScreen
+              onDecide={handleDecide}
+              onPickForMe={handlePickForMe}
+              onRepick={handleRepick}
+              streak={streak}
+            />
+          )}
           {view === "result" && currentMeal && prefs && (
             <ResultScreen
               meal={currentMeal}
@@ -177,7 +201,7 @@ export default function Index() {
               onRepick={handleRepick}
             />
           )}
-          {view === "settings" && <SettingsScreen onNavigate={(page) => setView(page)} streak={streak} />}
+          {view === "settings" && <SettingsScreen onNavigate={(page) => setView(page)} streak={streak} totalDecided={history.length} />}
           {view === "privacy" && <PrivacyPolicy onBack={() => setView("settings")} />}
           {view === "terms" && <TermsOfService onBack={() => setView("settings")} />}
           {view === "contact" && <ContactSupport onBack={() => setView("settings")} />}

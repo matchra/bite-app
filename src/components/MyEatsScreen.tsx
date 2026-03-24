@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Meal } from "@/data/meals";
-import { Trash2, UtensilsCrossed, ShoppingCart, Check, Clock, ChevronRight, Sparkles } from "lucide-react";
+import { Trash2, UtensilsCrossed, ShoppingCart, Check, Clock, ChevronRight, Sparkles, Share2 } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import { HistoryEntry } from "@/components/HistoryScreen";
 
@@ -14,6 +14,7 @@ interface MyEatsScreenProps {
 }
 
 type SubTab = "saved" | "history" | "grocery";
+type SavedFilter = "all" | "quick" | "cheap" | "healthy" | "protein";
 
 function formatDate(iso: string): string {
   const date = new Date(iso);
@@ -21,10 +22,18 @@ function formatDate(iso: string): string {
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / 86400000);
   if (days === 0) return `Today at ${date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
-  if (days === 1) return `Yesterday at ${date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
-  if (days < 7) return `${date.toLocaleDateString([], { weekday: "long" })} at ${date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
-  return date.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+  if (days === 1) return `Yesterday`;
+  if (days < 7) return date.toLocaleDateString([], { weekday: "long" });
+  return date.toLocaleDateString([], { month: "short", day: "numeric" });
 }
+
+const PERSONALITIES: Record<string, { label: string; emoji: string; desc: string }> = {
+  comfort: { label: "Comfort Craver", emoji: "🛋️", desc: "You go for the warm, cozy, soul-hugging meals" },
+  quick: { label: "Speed Eater", emoji: "⚡", desc: "No time to waste — you eat fast and move on" },
+  healthy: { label: "Health Nut", emoji: "🥬", desc: "Clean eating is your love language" },
+  "high-protein": { label: "Gym Bro", emoji: "💪", desc: "Gains first, everything else second" },
+  any: { label: "Wildcard", emoji: "🎲", desc: "You're unpredictable and we love it" },
+};
 
 function computeStats(entries: HistoryEntry[]) {
   if (entries.length < 3) return null;
@@ -40,47 +49,75 @@ function computeStats(entries: HistoryEntry[]) {
     if (e.mealMood) moodCounts.set(e.mealMood, (moodCounts.get(e.mealMood) || 0) + 1);
   });
   const topMood = [...moodCounts.entries()].sort(([, a], [, b]) => b - a)[0];
-  const personalities: Record<string, { label: string; emoji: string }> = {
-    comfort: { label: "Comfort Creature", emoji: "🛋️" },
-    quick: { label: "Speed Eater", emoji: "⚡" },
-    healthy: { label: "Health Nut", emoji: "🥬" },
-    "high-protein": { label: "Gym Bro", emoji: "💪" },
-    any: { label: "Wildcard", emoji: "🎲" },
-  };
-  const personality = topMood ? personalities[topMood[0]] || { label: "Foodie", emoji: "🍽️" } : { label: "Explorer", emoji: "🧭" };
+
+  // Budget tracking
+  const budgetCounts = new Map<string, number>();
+  // We can infer personality from moods
+  const personality = topMood ? PERSONALITIES[topMood[0]] || { label: "Foodie", emoji: "🍽️", desc: "You appreciate all kinds of food" } : { label: "Explorer", emoji: "🧭", desc: "Still discovering your food identity" };
   const topMoodPct = topMood ? Math.round((topMood[1] / entries.length) * 100) : 0;
-  return { topMeal, personality, topMoodPct, totalMeals: entries.length };
+
+  // Unique meals count
+  const uniqueMeals = new Set(entries.map(e => e.mealId)).size;
+
+  return { topMeal, personality, topMoodPct, totalMeals: entries.length, uniqueMeals };
 }
 
 export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved, onClearHistory, onRepick }: MyEatsScreenProps) {
   const [subTab, setSubTab] = useState<SubTab>("saved");
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
+  const [savedFilter, setSavedFilter] = useState<SavedFilter>("all");
 
   const cookMeals = savedMeals.filter((m) => m.type === "cook" && m.ingredients.length > 0);
   const stats = computeStats(historyEntries);
 
-  const groceryList = useMemo(() => {
-    const map = new Map<string, string[]>();
-    cookMeals.forEach((meal) => {
-      meal.ingredients.forEach((ing) => {
-        const key = ing.toLowerCase();
-        if (!map.has(key)) map.set(key, []);
-        if (!map.get(key)!.includes(meal.name)) map.get(key)!.push(meal.name);
-      });
+  // Filter saved meals
+  const filteredSaved = useMemo(() => {
+    if (savedFilter === "all") return savedMeals;
+    return savedMeals.filter((m) => {
+      switch (savedFilter) {
+        case "quick": return m.prepTime === "5";
+        case "cheap": return m.budget === "$";
+        case "healthy": return m.moods.includes("healthy");
+        case "protein": return m.moods.includes("high-protein") || m.tags.includes("high-protein");
+        default: return true;
+      }
     });
-    return Array.from(map.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([ingredient, fromMeals]) => ({ ingredient, fromMeals }));
-  }, [cookMeals]);
+  }, [savedMeals, savedFilter]);
 
-  const toggleCheck = (item: string) => {
+  // Group grocery items by recipe
+  const groceryByRecipe = useMemo(() => {
+    return cookMeals.map(meal => ({
+      meal,
+      ingredients: meal.ingredients.map(ing => ({
+        name: ing,
+        checked: checkedItems.has(`${meal.id}-${ing}`),
+        key: `${meal.id}-${ing}`,
+      }))
+    }));
+  }, [cookMeals, checkedItems]);
+
+  const totalGroceryItems = groceryByRecipe.reduce((acc, r) => acc + r.ingredients.length, 0);
+  const checkedCount = groceryByRecipe.reduce((acc, r) => acc + r.ingredients.filter(i => i.checked).length, 0);
+
+  const toggleCheck = (key: string) => {
     haptic("light");
     setCheckedItems((prev) => {
       const next = new Set(prev);
-      if (next.has(item)) next.delete(item);
-      else next.add(item);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
+  };
+
+  const handleSharePersonality = async () => {
+    haptic("light");
+    if (!stats) return;
+    const text = `My food personality is ${stats.personality.emoji} ${stats.personality.label}!\n${stats.personality.desc}\n\n${stats.totalMeals} meals decided with Bite 🍽️`;
+    if (navigator.share) {
+      try { await navigator.share({ title: "My Food Personality", text }); } catch {}
+    } else {
+      try { await navigator.clipboard.writeText(text); } catch {}
+    }
   };
 
   const totalItems = savedMeals.length + historyEntries.length;
@@ -98,13 +135,13 @@ export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved
 
       {/* Sub-tab switcher */}
       <div className="flex gap-1 mb-5 bg-secondary rounded-xl p-1">
-        <SubTabButton active={subTab === "saved"} onClick={() => { haptic("light"); setSubTab("saved"); }} count={savedMeals.length}>
+        <SubTabButton active={subTab === "saved"} onClick={() => { haptic("light"); setSubTab("saved"); }}>
           ⭐ Saved
         </SubTabButton>
-        <SubTabButton active={subTab === "history"} onClick={() => { haptic("light"); setSubTab("history"); }} count={historyEntries.length}>
+        <SubTabButton active={subTab === "history"} onClick={() => { haptic("light"); setSubTab("history"); }}>
           📖 History
         </SubTabButton>
-        <SubTabButton active={subTab === "grocery"} onClick={() => { haptic("light"); setSubTab("grocery"); }} count={groceryList.length}>
+        <SubTabButton active={subTab === "grocery"} onClick={() => { haptic("light"); setSubTab("grocery"); }}>
           🛒 List
         </SubTabButton>
       </div>
@@ -117,35 +154,71 @@ export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved
               <EmptyState
                 icon={<UtensilsCrossed className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />}
                 title="No saves yet"
-                subtitle="Bookmark meals you love and they'll show up here."
+                subtitle="Bookmark meals you love and they'll show up here. Tap 🔖 on any result!"
               />
             ) : (
-              <div className="space-y-2.5">
-                <AnimatePresence mode="popLayout">
-                  {savedMeals.map((meal, i) => (
-                    <motion.div
-                      key={meal.id}
-                      layout
-                      initial={{ opacity: 0, y: 12, scale: 0.96 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, x: -80, scale: 0.9 }}
-                      transition={{ delay: i * 0.04, type: "spring", stiffness: 300, damping: 25 }}
-                      className="flex items-center gap-3 bg-card rounded-2xl p-4 border border-border"
+              <>
+                {/* Filter chips */}
+                <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
+                  {([
+                    { value: "all" as const, label: "All" },
+                    { value: "quick" as const, label: "⚡ Quick" },
+                    { value: "cheap" as const, label: "💵 Cheap" },
+                    { value: "healthy" as const, label: "🥬 Healthy" },
+                    { value: "protein" as const, label: "💪 Protein" },
+                  ]).map((f) => (
+                    <button
+                      key={f.value}
+                      onClick={() => { haptic("light"); setSavedFilter(f.value); }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-200 ${
+                        savedFilter === f.value
+                          ? "bg-foreground text-background"
+                          : "bg-secondary text-muted-foreground"
+                      }`}
                     >
-                      <motion.span className="text-2xl" whileTap={{ scale: 1.3, rotate: 10 }}>
-                        {meal.emoji}
-                      </motion.span>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-display font-semibold text-card-foreground truncate">{meal.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{meal.description}</p>
-                      </div>
-                      <button onClick={() => { haptic("light"); onRemoveSaved(meal.id); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-muted-foreground active:text-destructive transition-colors rounded-xl active:bg-destructive/10">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </motion.div>
+                      {f.label}
+                    </button>
                   ))}
-                </AnimatePresence>
-              </div>
+                </div>
+
+                {filteredSaved.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center mt-8">No meals match this filter.</p>
+                ) : (
+                  <div className="space-y-2.5">
+                    <AnimatePresence mode="popLayout">
+                      {filteredSaved.map((meal, i) => (
+                        <motion.div
+                          key={meal.id}
+                          layout
+                          initial={{ opacity: 0, y: 12, scale: 0.96 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, x: -80, scale: 0.9 }}
+                          transition={{ delay: i * 0.04, type: "spring", stiffness: 300, damping: 25 }}
+                          className="flex items-center gap-3 bg-card rounded-2xl p-4 border border-border"
+                        >
+                          <motion.button
+                            className="text-2xl"
+                            whileTap={{ scale: 1.3, rotate: 10 }}
+                            onClick={() => { haptic("light"); onRepick(meal.id); }}
+                          >
+                            {meal.emoji}
+                          </motion.button>
+                          <button
+                            className="flex-1 min-w-0 text-left"
+                            onClick={() => { haptic("light"); onRepick(meal.id); }}
+                          >
+                            <p className="font-display font-semibold text-card-foreground truncate">{meal.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{meal.description}</p>
+                          </button>
+                          <button onClick={() => { haptic("light"); onRemoveSaved(meal.id); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-muted-foreground active:text-destructive transition-colors rounded-xl active:bg-destructive/10">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                )}
+              </>
             )}
           </motion.div>
         )}
@@ -161,29 +234,33 @@ export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved
                 className="bg-card rounded-2xl border border-border p-4 mb-4 overflow-hidden relative"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.04] to-transparent pointer-events-none" />
-                <div className="flex items-center gap-2 mb-3 relative z-10">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                  <p className="text-xs font-semibold text-primary uppercase tracking-wider">Your Food Personality</p>
+                <div className="flex items-center justify-between mb-3 relative z-10">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    <p className="text-xs font-semibold text-primary uppercase tracking-wider">Your Food Personality</p>
+                  </div>
+                  <button onClick={handleSharePersonality} className="p-1.5 rounded-lg active:bg-muted/50 transition-colors">
+                    <Share2 className="w-3.5 h-3.5 text-muted-foreground" />
+                  </button>
                 </div>
-                <div className="flex items-center gap-3 mb-3 relative z-10">
+                <div className="flex items-center gap-3 mb-2 relative z-10">
                   <span className="text-3xl">{stats.personality.emoji}</span>
                   <div>
                     <p className="font-display font-bold text-lg text-card-foreground">{stats.personality.label}</p>
-                    {stats.topMoodPct > 0 && (
-                      <p className="text-xs text-muted-foreground">{stats.topMoodPct}% of your picks are this vibe</p>
-                    )}
+                    <p className="text-xs text-muted-foreground">{stats.personality.desc}</p>
                   </div>
                 </div>
-                <div className="flex gap-3 relative z-10">
-                  <div className="flex-1 bg-secondary rounded-xl p-2.5 text-center">
-                    <p className="text-lg font-bold text-card-foreground">{stats.totalMeals}</p>
-                    <p className="text-[10px] text-muted-foreground">meals decided</p>
-                  </div>
+                {stats.topMoodPct > 0 && (
+                  <p className="text-[10px] text-muted-foreground/70 mb-3 relative z-10">{stats.topMoodPct}% of your picks are this vibe</p>
+                )}
+                <div className="flex gap-2 relative z-10">
+                  <StatBubble value={stats.totalMeals.toString()} label="decided" />
+                  <StatBubble value={stats.uniqueMeals.toString()} label="unique" />
                   {stats.topMeal && stats.topMeal.count > 1 && (
-                    <div className="flex-1 bg-secondary rounded-xl p-2.5 text-center">
-                      <p className="text-lg">{stats.topMeal.emoji}</p>
+                    <div className="flex-1 bg-secondary rounded-xl p-2 text-center">
+                      <p className="text-base">{stats.topMeal.emoji}</p>
                       <p className="text-[10px] text-muted-foreground truncate">
-                        {stats.topMeal.name} ×{stats.topMeal.count}
+                        ×{stats.topMeal.count}
                       </p>
                     </div>
                   )}
@@ -195,7 +272,7 @@ export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved
               <EmptyState
                 icon={<Clock className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />}
                 title="No history yet"
-                subtitle={"Tap \"Let's eat!\" on a meal and it'll show up here."}
+                subtitle="Complete a meal decision and it'll show up here."
               />
             ) : (
               <>
@@ -220,12 +297,9 @@ export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved
                         onClick={() => { haptic("light"); onRepick(entry.mealId); }}
                         className="w-full flex items-center gap-3 bg-card rounded-2xl p-4 border border-border text-left active:bg-muted/50 transition-colors"
                       >
-                        <motion.span className="text-2xl" whileTap={{ scale: 1.3, rotate: 10 }}>
-                          {entry.mealEmoji}
-                        </motion.span>
+                        <span className="text-2xl">{entry.mealEmoji}</span>
                         <div className="flex-1 min-w-0">
                           <p className="font-display font-semibold text-card-foreground truncate">{entry.mealName}</p>
-                          <p className="text-xs text-muted-foreground truncate">{entry.mealDescription}</p>
                           <p className="text-[10px] text-muted-foreground/70 mt-0.5">{formatDate(entry.chosenAt)}</p>
                         </div>
                         <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -238,50 +312,48 @@ export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved
           </motion.div>
         )}
 
-        {/* GROCERY TAB */}
+        {/* GROCERY TAB - grouped by recipe */}
         {subTab === "grocery" && (
           <motion.div key="grocery" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}>
             {cookMeals.length === 0 ? (
               <EmptyState
                 icon={<ShoppingCart className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />}
                 title="No cook meals saved"
-                subtitle="Save some cook meals to auto-generate a grocery list!"
+                subtitle="Save some cook meals to auto-generate a grocery checklist!"
               />
             ) : (
               <div>
-                <p className="text-xs text-muted-foreground mb-3">
-                  {checkedItems.size} of {groceryList.length} items checked
+                <p className="text-xs text-muted-foreground mb-4">
+                  {checkedCount} of {totalGroceryItems} items checked
                 </p>
-                <div className="space-y-1.5">
-                  {groceryList.map(({ ingredient, fromMeals }, i) => {
-                    const isChecked = checkedItems.has(ingredient);
-                    return (
-                      <motion.button
-                        key={ingredient}
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.02 }}
-                        onClick={() => toggleCheck(ingredient)}
-                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${
-                          isChecked ? "bg-muted/50" : "bg-card border border-border"
-                        }`}
-                      >
-                        <div className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
-                          isChecked ? "bg-success text-success-foreground" : "border-2 border-border"
-                        }`}>
-                          {isChecked && <Check className="w-3 h-3" />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-sm font-medium capitalize transition-all ${isChecked ? "line-through text-muted-foreground" : "text-card-foreground"}`}>
-                            {ingredient}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground truncate">
-                            for {fromMeals.join(", ")}
-                          </p>
-                        </div>
-                      </motion.button>
-                    );
-                  })}
+                <div className="space-y-4">
+                  {groceryByRecipe.map(({ meal, ingredients }) => (
+                    <div key={meal.id}>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <span>{meal.emoji}</span> {meal.name}
+                      </p>
+                      <div className="space-y-1">
+                        {ingredients.map(({ name, checked, key }) => (
+                          <motion.button
+                            key={key}
+                            onClick={() => toggleCheck(key)}
+                            className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all ${
+                              checked ? "bg-muted/50" : "bg-card border border-border"
+                            }`}
+                          >
+                            <div className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
+                              checked ? "bg-success text-success-foreground" : "border-2 border-border"
+                            }`}>
+                              {checked && <Check className="w-3 h-3" />}
+                            </div>
+                            <p className={`text-sm font-medium capitalize transition-all ${checked ? "line-through text-muted-foreground" : "text-card-foreground"}`}>
+                              {name}
+                            </p>
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -292,7 +364,16 @@ export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved
   );
 }
 
-function SubTabButton({ active, onClick, children, count }: { active: boolean; onClick: () => void; children: React.ReactNode; count?: number }) {
+function StatBubble({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="flex-1 bg-secondary rounded-xl p-2 text-center">
+      <p className="text-base font-bold text-card-foreground">{value}</p>
+      <p className="text-[10px] text-muted-foreground">{label}</p>
+    </div>
+  );
+}
+
+function SubTabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       onClick={onClick}
