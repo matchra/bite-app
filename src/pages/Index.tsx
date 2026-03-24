@@ -153,7 +153,7 @@ export default function Index() {
           initial="initial"
           animate="animate"
           exit="exit"
-          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
         >
           {view === "home" && <HomeScreen onDecide={handleDecide} streak={streak} />}
           {view === "result" && currentMeal && prefs && (
