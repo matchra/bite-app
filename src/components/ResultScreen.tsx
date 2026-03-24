@@ -169,7 +169,7 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
                 <motion.button
                   whileTap={{ scale: 0.96 }}
                   onClick={handleNearMe}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium active:bg-secondary/70 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium active:bg-secondary/70 transition-all duration-200 ease-out"
                 >
                   <MapPin className="w-4 h-4" />
                   Find {meal.name} near me
@@ -181,7 +181,7 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
           {/* Actions */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="flex gap-2.5 mt-5">
             {onShuffle && (
-              <motion.button whileTap={{ scale: 0.93 }} onClick={handleShuffle} className="flex-1 flex items-center justify-center gap-2 py-3.5 min-h-[48px] rounded-2xl bg-secondary text-secondary-foreground font-medium active:bg-secondary/70 transition-colors">
+              <motion.button whileTap={{ scale: 0.93 }} onClick={handleShuffle} className="flex-1 flex items-center justify-center gap-2 py-3.5 min-h-[48px] rounded-2xl bg-secondary text-secondary-foreground font-medium active:bg-secondary/70 transition-all duration-200 ease-out">
                 <motion.div key={`spin-${shuffleCount}`} animate={{ rotate: shuffleCount > 0 ? 360 : 0 }} transition={{ duration: 0.4 }}>
                   <RefreshCw className="w-4 h-4" />
                 </motion.div>
@@ -189,11 +189,11 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
               </motion.button>
             )}
 
-            <motion.button whileTap={{ scale: 0.93 }} onClick={handleShare} className="flex items-center justify-center px-4 py-3.5 min-h-[48px] rounded-2xl bg-secondary text-secondary-foreground active:bg-secondary/70 transition-colors">
+            <motion.button whileTap={{ scale: 0.93 }} onClick={handleShare} className="flex items-center justify-center px-4 py-3.5 min-h-[48px] rounded-2xl bg-secondary text-secondary-foreground active:bg-secondary/70 transition-all duration-200 ease-out">
               <Share2 className="w-4 h-4" />
             </motion.button>
 
-            <motion.button whileTap={{ scale: 0.93 }} onClick={handleSave} className={`flex items-center justify-center px-4 py-3.5 min-h-[48px] rounded-2xl font-medium transition-all ${isSaved ? "bg-success/10 text-success" : "bg-secondary text-secondary-foreground active:bg-secondary/70"}`}>
+            <motion.button whileTap={{ scale: 0.93 }} onClick={handleSave} className={`flex items-center justify-center px-4 py-3.5 min-h-[48px] rounded-2xl font-medium transition-all duration-200 ease-out ${isSaved ? "bg-success/10 text-success" : "bg-secondary text-secondary-foreground active:bg-secondary/70"}`}>
               <AnimatePresence mode="wait">
                 {isSaved ? (
                   <motion.div key="saved" initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
@@ -222,7 +222,7 @@ export default function ResultScreen({ meal, mood, budget, onShuffle, onSave, on
             transition={{ delay: 0.35 }}
             whileTap={{ scale: 0.96 }}
             onClick={handleDone}
-            className="w-full mt-3 py-3.5 min-h-[48px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-colors"
+            className="w-full mt-3 py-3.5 min-h-[48px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-all duration-200 ease-out"
           >
             Let's eat! 🍴
           </motion.button>

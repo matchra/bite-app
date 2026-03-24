@@ -257,7 +257,7 @@ export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
               <motion.button
                 whileTap={{ scale: 0.96 }}
                 onClick={handleIngredientsNext}
-                className="w-full mt-6 py-4 min-h-[52px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-colors"
+                className="w-full mt-6 py-4 min-h-[52px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-all duration-200 ease-out"
               >
                 {availableIngredients.length > 0 ? `Next with ${availableIngredients.length} ingredient${availableIngredients.length !== 1 ? "s" : ""} →` : "Skip — I'll get whatever"}
               </motion.button>
@@ -284,7 +284,7 @@ export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
               <motion.button
                 whileTap={{ scale: 0.96 }}
                 onClick={handleDietNext}
-                className="w-full mt-6 py-4 min-h-[52px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-colors"
+                className="w-full mt-6 py-4 min-h-[52px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-all duration-200 ease-out"
               >
                 {diets.length > 0 ? "Next →" : "Skip — I eat everything"}
               </motion.button>
@@ -349,7 +349,7 @@ function Chip({ selected, onClick, children }: { selected: boolean; onClick: () 
     <motion.button
       whileTap={{ scale: 0.93 }}
       onClick={onClick}
-      className={`px-5 py-3.5 min-h-[48px] rounded-2xl text-base font-medium transition-colors ${
+      className={`px-5 py-3.5 min-h-[48px] rounded-2xl text-base font-medium transition-all duration-200 ease-out ${
         selected ? "bg-foreground text-background shadow-md" : "bg-secondary text-secondary-foreground"
       }`}
     >
@@ -363,14 +363,14 @@ function BigOption({ selected, onClick, emoji, label, desc }: { selected: boolea
     <motion.button
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
-      className={`w-full flex items-center gap-4 p-4 min-h-[64px] rounded-2xl text-left transition-all border ${
+      className={`w-full flex items-center gap-4 p-4 min-h-[64px] rounded-2xl text-left transition-all duration-200 ease-out border ${
         selected ? "bg-foreground text-background border-foreground shadow-md" : "bg-card text-card-foreground border-border"
       }`}
     >
       <span className="text-2xl">{emoji}</span>
       <div>
-        <p className={`font-display font-semibold ${selected ? "text-background" : "text-card-foreground"}`}>{label}</p>
-        <p className={`text-xs mt-0.5 ${selected ? "text-background/70" : "text-muted-foreground"}`}>{desc}</p>
+        <p className={`font-display font-semibold transition-colors duration-200 ${selected ? "text-background" : "text-card-foreground"}`}>{label}</p>
+        <p className={`text-xs mt-0.5 transition-colors duration-200 ${selected ? "text-background/70" : "text-muted-foreground"}`}>{desc}</p>
       </div>
     </motion.button>
   );

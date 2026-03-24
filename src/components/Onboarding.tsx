@@ -108,7 +108,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       <motion.button
         whileTap={{ scale: 0.96 }}
         onClick={handleNext}
-        className="w-full max-w-sm py-4 min-h-[52px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-colors"
+        className="w-full max-w-sm py-4 min-h-[52px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-all duration-200 ease-out"
       >
         {current === slides.length - 1 ? "Let's go! 🚀" : "Next"}
       </motion.button>
