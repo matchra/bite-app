@@ -221,6 +221,7 @@ export default function SettingsScreen({ onNavigate, streak, totalDecided }: Set
           <SettingsRow icon={Shield} label="Privacy Policy" onClick={() => onNavigate("privacy")} />
           <SettingsRow icon={FileText} label="Terms of Service" onClick={() => onNavigate("terms")} />
           <SettingsRow icon={Mail} label="Contact & Support" onClick={() => onNavigate("contact")} />
+          <SettingsRow icon={Globe} label="Website" onClick={() => window.open("https://usebiteapp.com", "_blank")} />
         </div>
       </div>
     </div>
