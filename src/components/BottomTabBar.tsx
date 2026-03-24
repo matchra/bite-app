@@ -1,6 +1,6 @@
-import { Home, Bookmark, Clock, Settings } from "lucide-react";
+import { Home, UtensilsCrossed, Settings } from "lucide-react";
 
-export type Tab = "home" | "saved" | "history" | "settings";
+export type Tab = "home" | "myeats" | "settings";
 
 interface BottomTabBarProps {
   active: Tab;
@@ -10,8 +10,7 @@ interface BottomTabBarProps {
 
 const tabs: { id: Tab; label: string; icon: typeof Home }[] = [
   { id: "home", label: "Home", icon: Home },
-  { id: "saved", label: "Saved", icon: Bookmark },
-  { id: "history", label: "History", icon: Clock },
+  { id: "myeats", label: "My Eats", icon: UtensilsCrossed },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -32,7 +31,7 @@ export default function BottomTabBar({ active, onChange, savedCount }: BottomTab
             >
               <div className="relative">
                 <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
-                {tab.id === "saved" && savedCount > 0 && (
+                {tab.id === "myeats" && savedCount > 0 && (
                   <span className="absolute -top-1.5 -right-2.5 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-bold">
                     {savedCount > 9 ? "9+" : savedCount}
                   </span>

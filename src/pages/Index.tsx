@@ -2,8 +2,8 @@ import { useState, useCallback, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import HomeScreen from "@/components/HomeScreen";
 import ResultScreen from "@/components/ResultScreen";
-import SavedMeals from "@/components/SavedMeals";
-import HistoryScreen, { HistoryEntry } from "@/components/HistoryScreen";
+import MyEatsScreen from "@/components/MyEatsScreen";
+import { HistoryEntry } from "@/components/HistoryScreen";
 import SettingsScreen from "@/components/SettingsScreen";
 import Onboarding from "@/components/Onboarding";
 import BottomTabBar, { Tab } from "@/components/BottomTabBar";
@@ -12,7 +12,7 @@ import { Meal, UserPreferences, recommendMeal, meals, Diet } from "@/data/meals"
 import { haptic } from "@/lib/haptics";
 import { updateStreak, shouldShowLunchReminder, dismissLunchReminder, sendNotification } from "@/lib/streak";
 
-type View = "home" | "result" | "saved" | "history" | "settings" | "privacy" | "terms" | "contact";
+type View = "home" | "result" | "myeats" | "settings" | "privacy" | "terms" | "contact";
 
 function loadSaved(): Meal[] {
   try { return JSON.parse(localStorage.getItem("wsie-saved") || "[]"); }
@@ -42,13 +42,11 @@ export default function Index() {
   const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem("wsie-onboarded"));
   const [isRepick, setIsRepick] = useState(false);
 
-  // Update streak on mount
   useEffect(() => {
     const s = updateStreak();
     setStreak(s.count);
   }, []);
 
-  // Check for lunch reminder
   useEffect(() => {
     if (shouldShowLunchReminder()) {
       dismissLunchReminder();
@@ -89,12 +87,13 @@ export default function Index() {
     setShowOnboarding(false);
   };
 
-  const activeTab: Tab = (view === "home" || view === "result") ? "home" : (view === "saved" ? "saved" : (view === "history" ? "history" : "settings"));
+  const activeTab: Tab = (view === "home" || view === "result") ? "home" : (view === "myeats" ? "myeats" : "settings");
 
   const handleTabChange = (tab: Tab) => {
     haptic("light");
     if (tab === "home") setView(view === "result" ? "result" : "home");
-    else setView(tab);
+    else if (tab === "myeats") setView("myeats");
+    else setView("settings");
   };
 
   const handleDecide = useCallback((p: UserPreferences) => {
@@ -126,7 +125,6 @@ export default function Index() {
     setIsRepick(true);
     setShuffleCount(0);
     setExcluded([]);
-    // Set minimal prefs for the result screen
     setPrefs({ budget: meal.budget, mood: meal.moods[0] || "any", prepTime: meal.prepTime, mealType: meal.type, diets: meal.diets });
     setView("result");
   }, []);
@@ -170,8 +168,15 @@ export default function Index() {
               shuffleCount={shuffleCount}
             />
           )}
-          {view === "saved" && <SavedMeals meals={saved} onRemove={handleRemove} />}
-          {view === "history" && <HistoryScreen entries={history} onClear={clearHistory} onRepick={handleRepick} />}
+          {view === "myeats" && (
+            <MyEatsScreen
+              savedMeals={saved}
+              historyEntries={history}
+              onRemoveSaved={handleRemove}
+              onClearHistory={clearHistory}
+              onRepick={handleRepick}
+            />
+          )}
           {view === "settings" && <SettingsScreen onNavigate={(page) => setView(page)} streak={streak} />}
           {view === "privacy" && <PrivacyPolicy onBack={() => setView("settings")} />}
           {view === "terms" && <TermsOfService onBack={() => setView("settings")} />}
