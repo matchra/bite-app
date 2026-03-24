@@ -216,11 +216,28 @@ export default function SettingsScreen({ onNavigate, streak, totalDecided }: Set
           </div>
         </div>
 
+        <SectionLabel>Support</SectionLabel>
+        <div className="bg-card rounded-2xl border border-border overflow-hidden divide-y divide-border">
+          <button
+            onClick={() => {
+              haptic("light");
+              window.location.href = "mailto:matchragroup@gmail.com?subject=Bite%20App%20Support%20Request&body=%0A%0A---%0ADevice%3A%20" + encodeURIComponent(navigator.userAgent);
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[48px] active:bg-muted/50 transition-colors"
+          >
+            <Mail className="w-5 h-5 text-primary" />
+            <div className="flex-1 text-left">
+              <p className="text-sm text-card-foreground">Contact Support</p>
+              <p className="text-xs text-muted-foreground">matchragroup@gmail.com</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+
         <SectionLabel>Legal</SectionLabel>
         <div className="bg-card rounded-2xl border border-border overflow-hidden divide-y divide-border">
           <SettingsRow icon={Shield} label="Privacy Policy" onClick={() => onNavigate("privacy")} />
           <SettingsRow icon={FileText} label="Terms of Service" onClick={() => onNavigate("terms")} />
-          <SettingsRow icon={Mail} label="Contact & Support" onClick={() => onNavigate("contact")} />
           <SettingsRow icon={Globe} label="Website" onClick={() => window.open("https://usebiteapp.com", "_blank")} />
         </div>
       </div>

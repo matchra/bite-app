@@ -37,7 +37,7 @@ export function PrivacyPolicy({ onBack }: { onBack: () => void }) {
       <h3 className="font-display font-semibold text-base text-foreground">Data Storage</h3>
       <p className="text-sm text-foreground/80">Your saved meals and preferences are stored exclusively in your device's local storage. Clearing your browser data will remove this information.</p>
       <h3 className="font-display font-semibold text-base text-foreground">Contact</h3>
-      <p className="text-sm text-foreground/80">If you have questions, contact us at <a href="mailto:hello@usebiteapp.com" className="text-primary underline">hello@usebiteapp.com</a></p>
+      <p className="text-sm text-foreground/80">If you have questions, contact us at <a href="mailto:matchragroup@gmail.com" className="text-primary underline">matchragroup@gmail.com</a></p>
     </LegalPage>
   );
 }
@@ -57,7 +57,7 @@ export function TermsOfService({ onBack }: { onBack: () => void }) {
       <h3 className="font-display font-semibold text-base text-foreground">Modifications</h3>
       <p className="text-sm text-foreground/80">We reserve the right to modify these terms at any time. Continued use after changes constitutes acceptance.</p>
       <h3 className="font-display font-semibold text-base text-foreground">Contact</h3>
-      <p className="text-sm text-foreground/80">Questions? Contact us at <a href="mailto:hello@usebiteapp.com" className="text-primary underline">hello@usebiteapp.com</a></p>
+      <p className="text-sm text-foreground/80">Questions? Contact us at <a href="mailto:matchragroup@gmail.com" className="text-primary underline">matchragroup@gmail.com</a></p>
     </LegalPage>
   );
 }
@@ -70,7 +70,7 @@ export function ContactSupport({ onBack }: { onBack: () => void }) {
       <div className="bg-muted rounded-2xl p-4 space-y-3">
         <div>
           <p className="text-xs font-medium text-muted-foreground">Email</p>
-          <a href="mailto:hello@usebiteapp.com" className="text-sm text-primary font-medium">hello@usebiteapp.com</a>
+          <a href="mailto:matchragroup@gmail.com" className="text-sm text-primary font-medium">matchragroup@gmail.com</a>
         </div>
         <div>
           <p className="text-xs font-medium text-muted-foreground">Website</p>
