@@ -2,8 +2,6 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Budget, Mood, PrepTime, MealType, Diet, getTimeGreeting, Meal } from "@/data/meals";
 import { haptic } from "@/lib/haptics";
-import { getMealOfTheDay } from "@/lib/mealOfTheDay";
-import { Sparkles } from "lucide-react";
 
 interface HomeScreenProps {
   onDecide: (prefs: { budget: Budget; mood: Mood; prepTime: PrepTime; mealType: MealType | "any"; diets: Diet[] }) => void;
@@ -97,7 +95,7 @@ export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
     exit: (dir: number) => ({ opacity: 0, x: dir * -80 }),
   };
 
-  const motd = getMealOfTheDay();
+  
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100dvh-80px)] px-5 pt-safe pb-4">
@@ -129,29 +127,6 @@ export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
           </motion.p>
         )}
       </motion.div>
-
-      {/* Meal of the Day — only show on first step */}
-      {step === "mood" && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="w-full max-w-sm mb-6"
-        >
-          <div className="bg-card rounded-2xl border border-border p-3.5 flex items-center gap-3 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.04] to-transparent pointer-events-none" />
-            <span className="text-2xl relative z-10">{motd.emoji}</span>
-            <div className="flex-1 min-w-0 relative z-10">
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <Sparkles className="w-3 h-3 text-primary" />
-                <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Meal of the day</span>
-              </div>
-              <p className="font-display font-semibold text-sm text-card-foreground truncate">{motd.name}</p>
-              <p className="text-[11px] text-muted-foreground truncate">{motd.description}</p>
-            </div>
-          </div>
-        </motion.div>
-      )}
 
       <div className="w-full max-w-sm">
         {/* Progress bar */}
