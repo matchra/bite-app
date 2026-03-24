@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { ChevronRight, FileText, Shield, Mail, Info, Bell, BellOff, Sun, Moon } from "lucide-react";
+import { useState } from "react";
+import { ChevronRight, FileText, Shield, Mail, Info, Bell, BellOff, Sun, Moon, Trash2, Download } from "lucide-react";
 import { getNotificationStatus, requestNotificationPermission } from "@/lib/streak";
 import { haptic } from "@/lib/haptics";
 import { motion } from "framer-motion";
@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 interface SettingsScreenProps {
   onNavigate: (page: "privacy" | "terms" | "contact") => void;
   streak: number;
+  totalDecided: number;
 }
 
 function getTheme(): "light" | "dark" {
@@ -18,7 +19,6 @@ function setTheme(theme: "light" | "dark") {
   document.documentElement.classList.toggle("dark", theme === "dark");
 }
 
-// Apply theme on load (called in main.tsx too)
 export function initTheme() {
   const saved = localStorage.getItem("wsie-theme");
   if (saved === "dark") {
@@ -29,9 +29,10 @@ export function initTheme() {
   }
 }
 
-export default function SettingsScreen({ onNavigate, streak }: SettingsScreenProps) {
+export default function SettingsScreen({ onNavigate, streak, totalDecided }: SettingsScreenProps) {
   const [notifStatus, setNotifStatus] = useState(getNotificationStatus);
   const [theme, setThemeState] = useState<"light" | "dark">(getTheme);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const handleNotifToggle = async () => {
     haptic("light");
@@ -47,6 +48,39 @@ export default function SettingsScreen({ onNavigate, streak }: SettingsScreenPro
     setTheme(next);
   };
 
+  const handleResetData = () => {
+    haptic("heavy");
+    localStorage.removeItem("wsie-saved");
+    localStorage.removeItem("wsie-history");
+    localStorage.removeItem("wsie-budget");
+    localStorage.removeItem("wsie-mood");
+    localStorage.removeItem("wsie-prepTime");
+    localStorage.removeItem("wsie-mealType");
+    localStorage.removeItem("wsie-diets");
+    localStorage.removeItem("wsie-streak");
+    setShowResetConfirm(false);
+    window.location.reload();
+  };
+
+  const handleExport = async () => {
+    haptic("light");
+    const data = {
+      saved: JSON.parse(localStorage.getItem("wsie-saved") || "[]"),
+      history: JSON.parse(localStorage.getItem("wsie-history") || "[]"),
+      exportedAt: new Date().toISOString(),
+    };
+    const text = JSON.stringify(data, null, 2);
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "My Bite Data", text });
+      } catch {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {}
+    }
+  };
+
   return (
     <div className="px-5 pt-safe pb-28 max-w-lg mx-auto">
       <div className="pt-6 mb-6">
@@ -60,14 +94,22 @@ export default function SettingsScreen({ onNavigate, streak }: SettingsScreenPro
             <div className="text-3xl">🍽️</div>
             <div className="flex-1">
               <p className="font-display font-bold text-card-foreground">Bite</p>
-              <p className="text-xs text-muted-foreground">Version 1.1.0</p>
+              <p className="text-xs text-muted-foreground">Version 1.2.0</p>
             </div>
-            {streak > 0 && (
-              <div className="text-right">
-                <p className="text-lg">🔥</p>
-                <p className="text-[10px] text-muted-foreground font-medium">{streak} day{streak !== 1 ? "s" : ""}</p>
-              </div>
-            )}
+            <div className="flex gap-3 text-right">
+              {streak > 0 && (
+                <div className="text-center">
+                  <p className="text-lg">🔥</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">{streak}d</p>
+                </div>
+              )}
+              {totalDecided > 0 && (
+                <div className="text-center">
+                  <p className="text-lg font-bold text-card-foreground">{totalDecided}</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">meals</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -109,12 +151,12 @@ export default function SettingsScreen({ onNavigate, streak }: SettingsScreenPro
               <BellOff className="w-5 h-5 text-muted-foreground" />
             )}
             <div className="flex-1 text-left">
-              <p className="text-sm text-card-foreground">Lunch reminders</p>
+              <p className="text-sm text-card-foreground">Daily suggestions</p>
               <p className="text-xs text-muted-foreground">
-                {notifStatus === "granted" ? "Enabled — we'll nudge you at lunch" :
+                {notifStatus === "granted" ? "Enabled — we'll nudge you daily" :
                  notifStatus === "denied" ? "Blocked — enable in browser settings" :
                  notifStatus === "unsupported" ? "Not supported on this device" :
-                 "Tap to enable reminders"}
+                 "Tap to enable daily meal reminders"}
               </p>
             </div>
             {notifStatus === "default" && (
@@ -123,14 +165,47 @@ export default function SettingsScreen({ onNavigate, streak }: SettingsScreenPro
           </button>
         </div>
 
-        <SectionLabel>Legal</SectionLabel>
+        <SectionLabel>Data</SectionLabel>
         <div className="bg-card rounded-2xl border border-border overflow-hidden divide-y divide-border">
-          <SettingsRow icon={Shield} label="Privacy Policy" onClick={() => onNavigate("privacy")} />
-          <SettingsRow icon={FileText} label="Terms of Service" onClick={() => onNavigate("terms")} />
-          <SettingsRow icon={Mail} label="Contact & Support" onClick={() => onNavigate("contact")} />
+          <button onClick={handleExport} className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[48px] active:bg-muted/50 transition-colors">
+            <Download className="w-5 h-5 text-muted-foreground" />
+            <div className="flex-1 text-left">
+              <p className="text-sm text-card-foreground">Export my meals</p>
+              <p className="text-xs text-muted-foreground">Share or save your meal data</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </button>
+          <div>
+            {!showResetConfirm ? (
+              <button onClick={() => { haptic("light"); setShowResetConfirm(true); }} className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[48px] active:bg-muted/50 transition-colors">
+                <Trash2 className="w-5 h-5 text-destructive/70" />
+                <div className="flex-1 text-left">
+                  <p className="text-sm text-destructive/80">Reset all data</p>
+                  <p className="text-xs text-muted-foreground">Clear saved meals, history, and preferences</p>
+                </div>
+              </button>
+            ) : (
+              <div className="px-4 py-3.5">
+                <p className="text-sm text-destructive font-medium mb-2">Are you sure? This can't be undone.</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowResetConfirm(false)}
+                    className="flex-1 py-2 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium active:bg-secondary/70 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleResetData}
+                    className="flex-1 py-2 rounded-xl bg-destructive text-destructive-foreground text-sm font-medium active:bg-destructive/90 transition-colors"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        <SectionLabel>Data</SectionLabel>
         <div className="bg-card rounded-2xl border border-border overflow-hidden">
           <div className="flex items-center gap-3 px-4 py-3.5">
             <Info className="w-5 h-5 text-muted-foreground" />
@@ -139,6 +214,13 @@ export default function SettingsScreen({ onNavigate, streak }: SettingsScreenPro
               <p className="text-xs text-muted-foreground">No account required. Your data stays on your device.</p>
             </div>
           </div>
+        </div>
+
+        <SectionLabel>Legal</SectionLabel>
+        <div className="bg-card rounded-2xl border border-border overflow-hidden divide-y divide-border">
+          <SettingsRow icon={Shield} label="Privacy Policy" onClick={() => onNavigate("privacy")} />
+          <SettingsRow icon={FileText} label="Terms of Service" onClick={() => onNavigate("terms")} />
+          <SettingsRow icon={Mail} label="Contact & Support" onClick={() => onNavigate("contact")} />
         </div>
       </div>
     </div>
