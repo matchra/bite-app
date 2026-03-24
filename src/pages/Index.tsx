@@ -120,7 +120,7 @@ export default function Index() {
     setShuffleCount(0);
     setIsRepick(false);
     const meal = recommendMeal(randomPrefs, []);
-    if (meal) { setCurrentMeal(meal); setView("result"); }
+    if (meal) { setCurrentMeal(meal); setView("result"); window.scrollTo({ top: 0 }); }
   }, []);
 
   const handleShuffle = useCallback(() => {
