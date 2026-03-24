@@ -187,7 +187,19 @@ export function getTimeGreeting(): { greeting: string; emoji: string; mealTime: 
 export function recommendMeal(prefs: UserPreferences, excludeIds: string[] = []): Meal | null {
   const currentMealTime = getCurrentMealTime();
 
-  const filter = (relaxMood = false, relaxTime = false, relaxBudget = false, relaxDiet = false, relaxMealTime = false) => {
+  const hasIngredientMatch = (meal: Meal, available: string[]) => {
+    if (meal.ingredients.length === 0) return true;
+    const normalAvail = available.map(a => a.toLowerCase());
+    return meal.ingredients.some(ing => normalAvail.includes(ing.toLowerCase()));
+  };
+
+  const hasAllIngredients = (meal: Meal, available: string[]) => {
+    if (meal.ingredients.length === 0) return true;
+    const normalAvail = available.map(a => a.toLowerCase());
+    return meal.ingredients.every(ing => normalAvail.includes(ing.toLowerCase()));
+  };
+
+  const filter = (relaxMood = false, relaxTime = false, relaxBudget = false, relaxDiet = false, relaxMealTime = false, ingredientMode: "strict" | "some" | "none" = "strict") => {
     return meals.filter((m) => {
       if (excludeIds.includes(m.id)) return false;
       if (!relaxBudget && m.budget !== prefs.budget) return false;
@@ -196,6 +208,10 @@ export function recommendMeal(prefs: UserPreferences, excludeIds: string[] = [])
       if (prefs.mealType !== "any" && m.type !== prefs.mealType) return false;
       if (!relaxDiet && prefs.diets.length > 0 && !prefs.diets.every((d) => m.diets.includes(d))) return false;
       if (!relaxMealTime && !m.mealTimes.includes(currentMealTime) && !m.mealTimes.includes("anytime")) return false;
+      if (prefs.availableIngredients && prefs.availableIngredients.length > 0 && ingredientMode !== "none") {
+        if (ingredientMode === "strict" && !hasAllIngredients(m, prefs.availableIngredients)) return false;
+        if (ingredientMode === "some" && !hasIngredientMatch(m, prefs.availableIngredients)) return false;
+      }
       return true;
     });
   };
