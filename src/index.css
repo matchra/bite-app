@@ -4,49 +4,49 @@
 
 @layer base {
   :root {
-    --background: 30 25% 97%;
-    --foreground: 20 20% 12%;
+    --background: 0 0% 98%;
+    --foreground: 0 0% 9%;
 
-    --card: 30 30% 99%;
-    --card-foreground: 20 20% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
 
-    --popover: 30 30% 99%;
-    --popover-foreground: 20 20% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
 
-    --primary: 18 85% 56%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 30 20% 92%;
-    --secondary-foreground: 20 20% 20%;
+    --secondary: 0 0% 94%;
+    --secondary-foreground: 0 0% 25%;
 
-    --muted: 30 15% 93%;
-    --muted-foreground: 20 10% 50%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 45 90% 55%;
-    --accent-foreground: 20 20% 12%;
+    --accent: 24 80% 55%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 15% 88%;
-    --input: 30 15% 88%;
-    --ring: 18 85% 56%;
+    --border: 0 0% 91%;
+    --input: 0 0% 91%;
+    --ring: 0 0% 9%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 30 25% 97%;
-    --sidebar-foreground: 20 20% 12%;
-    --sidebar-primary: 18 85% 56%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 30 20% 92%;
-    --sidebar-accent-foreground: 20 20% 12%;
-    --sidebar-border: 30 15% 88%;
-    --sidebar-ring: 18 85% 56%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 9%;
+    --sidebar-primary: 0 0% 9%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 94%;
+    --sidebar-accent-foreground: 0 0% 9%;
+    --sidebar-border: 0 0% 91%;
+    --sidebar-ring: 0 0% 9%;
 
-    --success: 145 60% 42%;
+    --success: 152 55% 45%;
     --success-foreground: 0 0% 100%;
 
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 }
 
@@ -60,21 +60,27 @@
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     overscroll-behavior: none;
+    font-feature-settings: "cv11", "ss01";
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.025em;
   }
 }
 
 @layer utilities {
   .font-display {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.025em;
   }
   .pt-safe {
     padding-top: env(safe-area-inset-top, 0px);
   }
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .mt-safe {
+    margin-top: env(safe-area-inset-top, 0px);
   }
 }

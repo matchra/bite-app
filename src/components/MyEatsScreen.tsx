@@ -20,10 +20,10 @@ function formatDate(iso: string): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / 86400000);
-  if (days === 0) return `Today at ${date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
-  if (days === 1) return `Yesterday at ${date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
-  if (days < 7) return `${date.toLocaleDateString([], { weekday: "long" })} at ${date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
-  return date.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+  if (days === 0) return `Today, ${date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
+  if (days === 1) return `Yesterday`;
+  if (days < 7) return date.toLocaleDateString([], { weekday: "long" });
+  return date.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
 function computeStats(entries: HistoryEntry[]) {
@@ -83,63 +83,58 @@ export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved
     });
   };
 
-  const totalItems = savedMeals.length + historyEntries.length;
-
   return (
-    <div className="px-5 pt-safe pb-28 max-w-lg mx-auto">
-      <div className="pt-6 mb-4">
-        <h1 className="font-display text-2xl font-bold text-foreground">My Eats 🍴</h1>
-        {totalItems > 0 && (
-          <p className="text-sm text-muted-foreground mt-1">
-            {savedMeals.length} saved · {historyEntries.length} decided
-          </p>
-        )}
+    <div className="px-6 pt-safe pb-28 max-w-lg mx-auto">
+      <div className="pt-8 mb-6">
+        <h1 className="font-display text-[28px] font-bold text-foreground">My Eats</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          {savedMeals.length} saved · {historyEntries.length} decided
+        </p>
       </div>
 
-      {/* Sub-tab switcher */}
-      <div className="flex gap-1 mb-5 bg-secondary rounded-xl p-1">
-        <SubTabButton active={subTab === "saved"} onClick={() => { haptic("light"); setSubTab("saved"); }} count={savedMeals.length}>
-          ⭐ Saved
-        </SubTabButton>
-        <SubTabButton active={subTab === "history"} onClick={() => { haptic("light"); setSubTab("history"); }} count={historyEntries.length}>
-          📖 History
-        </SubTabButton>
-        <SubTabButton active={subTab === "grocery"} onClick={() => { haptic("light"); setSubTab("grocery"); }} count={groceryList.length}>
-          🛒 List
-        </SubTabButton>
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 bg-secondary rounded-lg p-0.5">
+        {([
+          { id: "saved" as const, label: "Saved" },
+          { id: "history" as const, label: "History" },
+          { id: "grocery" as const, label: "List" },
+        ]).map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => { haptic("light"); setSubTab(tab.id); }}
+            className={`flex-1 py-2 rounded-md text-xs font-medium transition-all min-h-[36px] ${
+              subTab === tab.id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       <AnimatePresence mode="wait">
-        {/* SAVED TAB */}
         {subTab === "saved" && (
           <motion.div key="saved" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             {savedMeals.length === 0 ? (
-              <EmptyState
-                icon={<UtensilsCrossed className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />}
-                title="No saves yet"
-                subtitle="Bookmark meals you love and they'll show up here."
-              />
+              <EmptyState icon="⭐" title="No saves yet" subtitle="Bookmark meals and they'll appear here." />
             ) : (
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 <AnimatePresence mode="popLayout">
                   {savedMeals.map((meal, i) => (
                     <motion.div
                       key={meal.id}
                       layout
-                      initial={{ opacity: 0, y: 12, scale: 0.96 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, x: -80, scale: 0.9 }}
-                      transition={{ delay: i * 0.04, type: "spring", stiffness: 300, damping: 25 }}
-                      className="flex items-center gap-3 bg-card rounded-2xl p-4 border border-border"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: -60 }}
+                      transition={{ delay: i * 0.03 }}
+                      className="flex items-center gap-3 bg-card rounded-xl p-3.5 border border-border"
                     >
-                      <motion.span className="text-2xl" whileTap={{ scale: 1.3, rotate: 10 }}>
-                        {meal.emoji}
-                      </motion.span>
+                      <span className="text-xl">{meal.emoji}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="font-display font-semibold text-card-foreground truncate">{meal.name}</p>
+                        <p className="font-semibold text-sm text-card-foreground truncate">{meal.name}</p>
                         <p className="text-xs text-muted-foreground truncate">{meal.description}</p>
                       </div>
-                      <button onClick={() => { haptic("light"); onRemoveSaved(meal.id); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-muted-foreground active:text-destructive transition-colors rounded-xl active:bg-destructive/10">
+                      <button onClick={() => { haptic("light"); onRemoveSaved(meal.id); }} className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center text-muted-foreground active:text-destructive transition-colors rounded-lg">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </motion.div>
@@ -150,136 +145,85 @@ export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved
           </motion.div>
         )}
 
-        {/* HISTORY TAB */}
         {subTab === "history" && (
           <motion.div key="history" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            {/* Stats card */}
             {stats && (
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-card rounded-2xl border border-border p-4 mb-4 overflow-hidden relative"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.04] to-transparent pointer-events-none" />
-                <div className="flex items-center gap-2 mb-3 relative z-10">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                  <p className="text-xs font-semibold text-primary uppercase tracking-wider">Your Food Personality</p>
-                </div>
-                <div className="flex items-center gap-3 mb-3 relative z-10">
-                  <span className="text-3xl">{stats.personality.emoji}</span>
+              <div className="bg-card rounded-xl border border-border p-4 mb-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{stats.personality.emoji}</span>
                   <div>
-                    <p className="font-display font-bold text-lg text-card-foreground">{stats.personality.label}</p>
-                    {stats.topMoodPct > 0 && (
-                      <p className="text-xs text-muted-foreground">{stats.topMoodPct}% of your picks are this vibe</p>
-                    )}
+                    <p className="font-semibold text-sm text-card-foreground">{stats.personality.label}</p>
+                    <p className="text-xs text-muted-foreground">{stats.totalMeals} meals · {stats.topMoodPct}% {stats.personality.label.toLowerCase()} vibes</p>
                   </div>
                 </div>
-                <div className="flex gap-3 relative z-10">
-                  <div className="flex-1 bg-secondary rounded-xl p-2.5 text-center">
-                    <p className="text-lg font-bold text-card-foreground">{stats.totalMeals}</p>
-                    <p className="text-[10px] text-muted-foreground">meals decided</p>
-                  </div>
-                  {stats.topMeal && stats.topMeal.count > 1 && (
-                    <div className="flex-1 bg-secondary rounded-xl p-2.5 text-center">
-                      <p className="text-lg">{stats.topMeal.emoji}</p>
-                      <p className="text-[10px] text-muted-foreground truncate">
-                        {stats.topMeal.name} ×{stats.topMeal.count}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
+              </div>
             )}
 
             {historyEntries.length === 0 ? (
-              <EmptyState
-                icon={<Clock className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />}
-                title="No history yet"
-                subtitle={"Tap \"Let's eat!\" on a meal and it'll show up here."}
-              />
+              <EmptyState icon="📖" title="No history yet" subtitle="Your meal decisions will show up here." />
             ) : (
               <>
                 <div className="flex justify-end mb-2">
-                  <button
-                    onClick={() => { haptic("light"); onClearHistory(); }}
-                    className="text-xs text-muted-foreground active:text-destructive transition-colors px-2 py-1 rounded-lg active:bg-destructive/10"
-                  >
-                    Clear all
+                  <button onClick={() => { haptic("light"); onClearHistory(); }} className="text-xs text-muted-foreground active:text-destructive transition-colors px-2 py-1">
+                    Clear
                   </button>
                 </div>
-                <div className="space-y-2">
-                  <AnimatePresence mode="popLayout">
-                    {historyEntries.map((entry, i) => (
-                      <motion.button
-                        key={entry.id}
-                        layout
-                        initial={{ opacity: 0, y: 12, scale: 0.96 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, x: -80, scale: 0.9 }}
-                        transition={{ delay: i * 0.03, type: "spring", stiffness: 300, damping: 25 }}
-                        onClick={() => { haptic("light"); onRepick(entry.mealId); }}
-                        className="w-full flex items-center gap-3 bg-card rounded-2xl p-4 border border-border text-left active:bg-muted/50 transition-colors"
-                      >
-                        <motion.span className="text-2xl" whileTap={{ scale: 1.3, rotate: 10 }}>
-                          {entry.mealEmoji}
-                        </motion.span>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-display font-semibold text-card-foreground truncate">{entry.mealName}</p>
-                          <p className="text-xs text-muted-foreground truncate">{entry.mealDescription}</p>
-                          <p className="text-[10px] text-muted-foreground/70 mt-0.5">{formatDate(entry.chosenAt)}</p>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                      </motion.button>
-                    ))}
-                  </AnimatePresence>
+                <div className="space-y-1.5">
+                  {historyEntries.map((entry, i) => (
+                    <motion.button
+                      key={entry.id}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.02 }}
+                      onClick={() => { haptic("light"); onRepick(entry.mealId); }}
+                      className="w-full flex items-center gap-3 bg-card rounded-xl p-3.5 border border-border text-left active:bg-secondary/50 transition-colors"
+                    >
+                      <span className="text-lg">{entry.mealEmoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-card-foreground truncate">{entry.mealName}</p>
+                        <p className="text-[11px] text-muted-foreground">{formatDate(entry.chosenAt)}</p>
+                      </div>
+                      <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 flex-shrink-0" />
+                    </motion.button>
+                  ))}
                 </div>
               </>
             )}
           </motion.div>
         )}
 
-        {/* GROCERY TAB */}
         {subTab === "grocery" && (
           <motion.div key="grocery" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             {cookMeals.length === 0 ? (
-              <EmptyState
-                icon={<ShoppingCart className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />}
-                title="No cook meals saved"
-                subtitle="Save some cook meals to auto-generate a grocery list!"
-              />
+              <EmptyState icon="🛒" title="No grocery list" subtitle="Save cook meals to generate a list." />
             ) : (
               <div>
                 <p className="text-xs text-muted-foreground mb-3">
-                  {checkedItems.size} of {groceryList.length} items checked
+                  {checkedItems.size}/{groceryList.length} checked
                 </p>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   {groceryList.map(({ ingredient, fromMeals }, i) => {
                     const isChecked = checkedItems.has(ingredient);
                     return (
-                      <motion.button
+                      <button
                         key={ingredient}
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.02 }}
                         onClick={() => toggleCheck(ingredient)}
-                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all ${
-                          isChecked ? "bg-muted/50" : "bg-card border border-border"
+                        className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all ${
+                          isChecked ? "opacity-50" : "bg-card border border-border"
                         }`}
                       >
-                        <div className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
-                          isChecked ? "bg-success text-success-foreground" : "border-2 border-border"
+                        <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-colors ${
+                          isChecked ? "bg-foreground" : "border border-border"
                         }`}>
-                          {isChecked && <Check className="w-3 h-3" />}
+                          {isChecked && <Check className="w-2.5 h-2.5 text-background" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm font-medium capitalize transition-all ${isChecked ? "line-through text-muted-foreground" : "text-card-foreground"}`}>
+                          <p className={`text-sm capitalize ${isChecked ? "line-through text-muted-foreground" : "text-card-foreground"}`}>
                             {ingredient}
                           </p>
-                          <p className="text-[10px] text-muted-foreground truncate">
-                            for {fromMeals.join(", ")}
-                          </p>
+                          <p className="text-[10px] text-muted-foreground truncate">{fromMeals.join(", ")}</p>
                         </div>
-                      </motion.button>
+                      </button>
                     );
                   })}
                 </div>
@@ -292,27 +236,12 @@ export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved
   );
 }
 
-function SubTabButton({ active, onClick, children, count }: { active: boolean; onClick: () => void; children: React.ReactNode; count?: number }) {
+function EmptyState({ icon, title, subtitle }: { icon: string; title: string; subtitle: string }) {
   return (
-    <button
-      onClick={onClick}
-      className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all min-h-[36px] ${
-        active ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function EmptyState({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle: string }) {
-  return (
-    <div className="text-center mt-16">
-      <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}>
-        {icon}
-      </motion.div>
-      <p className="text-foreground font-display font-semibold text-lg">{title}</p>
-      <p className="text-sm text-muted-foreground mt-2 max-w-[240px] mx-auto leading-relaxed">{subtitle}</p>
+    <div className="text-center mt-20">
+      <span className="text-4xl block mb-4">{icon}</span>
+      <p className="font-semibold text-foreground">{title}</p>
+      <p className="text-sm text-muted-foreground mt-1 max-w-[220px] mx-auto">{subtitle}</p>
     </div>
   );
 }
