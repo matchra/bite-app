@@ -4,6 +4,7 @@ import { Meal } from "@/data/meals";
 import { Trash2, UtensilsCrossed, ShoppingCart, Check, Clock, ChevronRight, Sparkles, Share2 } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import { HistoryEntry } from "@/components/HistoryScreen";
+import NativeAd from "@/components/NativeAd";
 
 interface MyEatsScreenProps {
   savedMeals: Meal[];
