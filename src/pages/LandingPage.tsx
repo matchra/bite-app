@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronRight, Star, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { trackEvent } from "@/lib/analytics";
@@ -8,21 +8,9 @@ import screenHome from "@/assets/landing-home.png";
 import screenResult from "@/assets/landing-result.png";
 import screenMyEats from "@/assets/landing-myeats.png";
 
-/* ──────────────────── Fade-up wrapper ──────────────────── */
+/* ──────────────────── Simple wrapper ──────────────────── */
 function FadeUp({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 24 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={className}>{children}</div>;
 }
 
 /* ──────────────────── Screenshot carousel ──────────────────── */
@@ -63,8 +51,8 @@ function ScreenshotCarousel() {
       >
         {screenshots.map((s, i) => (
           <div key={i} className="flex-shrink-0 snap-center w-[260px]">
-            <div className="rounded-[2rem] overflow-hidden shadow-xl border-[6px] border-foreground/10 bg-card">
-              <img src={s.src} alt={s.alt} className="w-full" loading="lazy" />
+            <div className="rounded-[2rem] overflow-hidden shadow-xl border-[6px] border-foreground/10 bg-card" style={{ aspectRatio: "390/844" }}>
+              <img src={s.src} alt={s.alt} className="w-full h-full object-cover" />
             </div>
           </div>
         ))}
@@ -183,15 +171,11 @@ export default function LandingPage() {
 
       {/* ────── APP PREVIEW ────── */}
       <section className="py-16">
-        <FadeUp>
-          <p className="text-xs font-semibold text-primary uppercase tracking-wider text-center mb-2">See it in action</p>
-          <h2 className="font-display text-2xl sm:text-3xl font-bold text-center text-foreground mb-8 px-6">
-            Simple, clean, and fast
-          </h2>
-        </FadeUp>
-        <FadeUp delay={0.15}>
-          <ScreenshotCarousel />
-        </FadeUp>
+        <p className="text-xs font-semibold text-primary uppercase tracking-wider text-center mb-2">See it in action</p>
+        <h2 className="font-display text-2xl sm:text-3xl font-bold text-center text-foreground mb-8 px-6">
+          Simple, clean, and fast
+        </h2>
+        <ScreenshotCarousel />
       </section>
 
       {/* ────── WHY BITE ────── */}
