@@ -5,9 +5,10 @@ import ResultScreen from "@/components/ResultScreen";
 import SavedMeals from "@/components/SavedMeals";
 import HistoryScreen, { HistoryEntry } from "@/components/HistoryScreen";
 import SettingsScreen from "@/components/SettingsScreen";
+import Onboarding from "@/components/Onboarding";
 import BottomTabBar, { Tab } from "@/components/BottomTabBar";
 import { PrivacyPolicy, TermsOfService, ContactSupport } from "@/components/LegalPage";
-import { Meal, UserPreferences, recommendMeal, Diet } from "@/data/meals";
+import { Meal, UserPreferences, recommendMeal, meals, Diet } from "@/data/meals";
 import { haptic } from "@/lib/haptics";
 import { updateStreak, shouldShowLunchReminder, dismissLunchReminder, sendNotification } from "@/lib/streak";
 
@@ -38,6 +39,8 @@ export default function Index() {
   const [history, setHistory] = useState<HistoryEntry[]>(loadHistory);
   const [shuffleCount, setShuffleCount] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem("wsie-onboarded"));
+  const [isRepick, setIsRepick] = useState(false);
 
   // Update streak on mount
   useEffect(() => {
@@ -53,9 +56,9 @@ export default function Index() {
     }
   }, []);
 
-  const persistSaved = (meals: Meal[]) => {
-    setSaved(meals);
-    localStorage.setItem("wsie-saved", JSON.stringify(meals));
+  const persistSaved = (m: Meal[]) => {
+    setSaved(m);
+    localStorage.setItem("wsie-saved", JSON.stringify(m));
   };
 
   const persistHistory = (entries: HistoryEntry[]) => {
@@ -70,15 +73,21 @@ export default function Index() {
       mealName: meal.name,
       mealEmoji: meal.emoji,
       mealDescription: meal.description,
+      mealMood: prefs?.mood,
       chosenAt: new Date().toISOString(),
     };
-    const updated = [entry, ...history].slice(0, 50); // keep last 50
+    const updated = [entry, ...history].slice(0, 50);
     persistHistory(updated);
-  }, [history]);
+  }, [history, prefs]);
 
   const clearHistory = useCallback(() => {
     persistHistory([]);
   }, []);
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem("wsie-onboarded", "1");
+    setShowOnboarding(false);
+  };
 
   const activeTab: Tab = (view === "home" || view === "result") ? "home" : (view === "saved" ? "saved" : (view === "history" ? "history" : "settings"));
 
@@ -92,6 +101,7 @@ export default function Index() {
     setPrefs(p);
     setExcluded([]);
     setShuffleCount(0);
+    setIsRepick(false);
     const meal = recommendMeal(p, []);
     if (meal) { setCurrentMeal(meal); setView("result"); }
   }, []);
@@ -109,6 +119,18 @@ export default function Index() {
     }
   }, [prefs, currentMeal, excluded]);
 
+  const handleRepick = useCallback((mealId: string) => {
+    const meal = meals.find((m) => m.id === mealId);
+    if (!meal) return;
+    setCurrentMeal(meal);
+    setIsRepick(true);
+    setShuffleCount(0);
+    setExcluded([]);
+    // Set minimal prefs for the result screen
+    setPrefs({ budget: meal.budget, mood: meal.moods[0] || "any", prepTime: meal.prepTime, mealType: meal.type, diets: meal.diets });
+    setView("result");
+  }, []);
+
   const handleSave = useCallback((meal: Meal) => {
     if (saved.some((m) => m.id === meal.id)) return;
     persistSaved([meal, ...saved]);
@@ -119,6 +141,10 @@ export default function Index() {
   }, [saved]);
 
   const showTabBar = view !== "result";
+
+  if (showOnboarding) {
+    return <Onboarding onComplete={handleOnboardingComplete} />;
+  }
 
   return (
     <div className="relative select-none overflow-hidden">
@@ -137,7 +163,7 @@ export default function Index() {
               meal={currentMeal}
               mood={prefs.mood}
               budget={prefs.budget}
-              onShuffle={handleShuffle}
+              onShuffle={isRepick ? undefined : handleShuffle}
               onSave={handleSave}
               onDone={(meal) => { addToHistory(meal); setView("home"); }}
               isSaved={saved.some((m) => m.id === currentMeal.id)}
@@ -145,7 +171,7 @@ export default function Index() {
             />
           )}
           {view === "saved" && <SavedMeals meals={saved} onRemove={handleRemove} />}
-          {view === "history" && <HistoryScreen entries={history} onClear={clearHistory} />}
+          {view === "history" && <HistoryScreen entries={history} onClear={clearHistory} onRepick={handleRepick} />}
           {view === "settings" && <SettingsScreen onNavigate={(page) => setView(page)} streak={streak} />}
           {view === "privacy" && <PrivacyPolicy onBack={() => setView("settings")} />}
           {view === "terms" && <TermsOfService onBack={() => setView("settings")} />}
