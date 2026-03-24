@@ -361,6 +361,13 @@ export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Banner ad at bottom of My Eats */}
+      {totalItems > 2 && (
+        <div className="mt-6">
+          <NativeAd variant="banner" context="myeats" />
+        </div>
+      )}
     </div>
   );
 }
