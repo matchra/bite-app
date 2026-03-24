@@ -183,15 +183,11 @@ export default function LandingPage() {
 
       {/* ────── APP PREVIEW ────── */}
       <section className="py-16">
-        <FadeUp>
-          <p className="text-xs font-semibold text-primary uppercase tracking-wider text-center mb-2">See it in action</p>
-          <h2 className="font-display text-2xl sm:text-3xl font-bold text-center text-foreground mb-8 px-6">
-            Simple, clean, and fast
-          </h2>
-        </FadeUp>
-        <FadeUp delay={0.15}>
-          <ScreenshotCarousel />
-        </FadeUp>
+        <p className="text-xs font-semibold text-primary uppercase tracking-wider text-center mb-2">See it in action</p>
+        <h2 className="font-display text-2xl sm:text-3xl font-bold text-center text-foreground mb-8 px-6">
+          Simple, clean, and fast
+        </h2>
+        <ScreenshotCarousel />
       </section>
 
       {/* ────── WHY BITE ────── */}
