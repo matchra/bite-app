@@ -9,7 +9,7 @@ interface ResultScreenProps {
   meal: Meal;
   mood: Mood;
   budget: Budget;
-  onShuffle: () => void;
+  onShuffle?: () => void;
   onSave: (meal: Meal) => void;
   onDone: (meal: Meal) => void;
   isSaved: boolean;
