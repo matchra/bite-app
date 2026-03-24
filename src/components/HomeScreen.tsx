@@ -349,7 +349,7 @@ function Chip({ selected, onClick, children }: { selected: boolean; onClick: () 
     <motion.button
       whileTap={{ scale: 0.93 }}
       onClick={onClick}
-      className={`px-5 py-3.5 min-h-[48px] rounded-2xl text-base font-medium transition-colors ${
+      className={`px-5 py-3.5 min-h-[48px] rounded-2xl text-base font-medium transition-all duration-200 ease-out ${
         selected ? "bg-foreground text-background shadow-md" : "bg-secondary text-secondary-foreground"
       }`}
     >
