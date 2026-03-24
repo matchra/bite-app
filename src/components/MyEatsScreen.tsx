@@ -152,7 +152,7 @@ export default function MyEatsScreen({ savedMeals, historyEntries, onRemoveSaved
 
         {/* HISTORY TAB */}
         {subTab === "history" && (
-          <motion.div key="history" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div key="history" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}>
             {/* Stats card */}
             {stats && (
               <motion.div
