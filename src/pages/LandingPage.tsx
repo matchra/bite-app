@@ -3,7 +3,7 @@ import { motion, useInView } from "framer-motion";
 import { ChevronRight, Star, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { trackEvent } from "@/lib/analytics";
-import appIcon from "@/assets/app-icon-base.png";
+import appIcon from "@/assets/app-icon-full.png";
 import screenHome from "@/assets/landing-home.png";
 import screenResult from "@/assets/landing-result.png";
 import screenMyEats from "@/assets/landing-myeats.png";
