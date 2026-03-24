@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import HomeScreen from "@/components/HomeScreen";
 import ResultScreen from "@/components/ResultScreen";
 import SavedMeals from "@/components/SavedMeals";
+import HistoryScreen, { HistoryEntry } from "@/components/HistoryScreen";
 import SettingsScreen from "@/components/SettingsScreen";
 import BottomTabBar, { Tab } from "@/components/BottomTabBar";
 import { PrivacyPolicy, TermsOfService, ContactSupport } from "@/components/LegalPage";
@@ -10,10 +11,15 @@ import { Meal, UserPreferences, recommendMeal, Diet } from "@/data/meals";
 import { haptic } from "@/lib/haptics";
 import { updateStreak, shouldShowLunchReminder, dismissLunchReminder, sendNotification } from "@/lib/streak";
 
-type View = "home" | "result" | "saved" | "settings" | "privacy" | "terms" | "contact";
+type View = "home" | "result" | "saved" | "history" | "settings" | "privacy" | "terms" | "contact";
 
 function loadSaved(): Meal[] {
   try { return JSON.parse(localStorage.getItem("wsie-saved") || "[]"); }
+  catch { return []; }
+}
+
+function loadHistory(): HistoryEntry[] {
+  try { return JSON.parse(localStorage.getItem("wsie-history") || "[]"); }
   catch { return []; }
 }
 
@@ -29,6 +35,7 @@ export default function Index() {
   const [prefs, setPrefs] = useState<UserPreferences | null>(null);
   const [excluded, setExcluded] = useState<string[]>([]);
   const [saved, setSaved] = useState<Meal[]>(loadSaved);
+  const [history, setHistory] = useState<HistoryEntry[]>(loadHistory);
   const [shuffleCount, setShuffleCount] = useState(0);
   const [streak, setStreak] = useState(0);
 
@@ -51,7 +58,29 @@ export default function Index() {
     localStorage.setItem("wsie-saved", JSON.stringify(meals));
   };
 
-  const activeTab: Tab = (view === "home" || view === "result") ? "home" : (view === "saved" ? "saved" : "settings");
+  const persistHistory = (entries: HistoryEntry[]) => {
+    setHistory(entries);
+    localStorage.setItem("wsie-history", JSON.stringify(entries));
+  };
+
+  const addToHistory = useCallback((meal: Meal) => {
+    const entry: HistoryEntry = {
+      id: `${meal.id}-${Date.now()}`,
+      mealId: meal.id,
+      mealName: meal.name,
+      mealEmoji: meal.emoji,
+      mealDescription: meal.description,
+      chosenAt: new Date().toISOString(),
+    };
+    const updated = [entry, ...history].slice(0, 50); // keep last 50
+    persistHistory(updated);
+  }, [history]);
+
+  const clearHistory = useCallback(() => {
+    persistHistory([]);
+  }, []);
+
+  const activeTab: Tab = (view === "home" || view === "result") ? "home" : (view === "saved" ? "saved" : (view === "history" ? "history" : "settings"));
 
   const handleTabChange = (tab: Tab) => {
     haptic("light");
@@ -110,12 +139,13 @@ export default function Index() {
               budget={prefs.budget}
               onShuffle={handleShuffle}
               onSave={handleSave}
-              onDone={() => setView("home")}
+              onDone={(meal) => { addToHistory(meal); setView("home"); }}
               isSaved={saved.some((m) => m.id === currentMeal.id)}
               shuffleCount={shuffleCount}
             />
           )}
           {view === "saved" && <SavedMeals meals={saved} onRemove={handleRemove} />}
+          {view === "history" && <HistoryScreen entries={history} onClear={clearHistory} />}
           {view === "settings" && <SettingsScreen onNavigate={(page) => setView(page)} streak={streak} />}
           {view === "privacy" && <PrivacyPolicy onBack={() => setView("settings")} />}
           {view === "terms" && <TermsOfService onBack={() => setView("settings")} />}
