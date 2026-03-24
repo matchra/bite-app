@@ -125,6 +125,7 @@ export default function Index() {
 
   const handleShuffle = useCallback(() => {
     if (!prefs || !currentMeal) return;
+    window.scrollTo({ top: 0 });
     const newExcluded = [...excluded, currentMeal.id];
     setExcluded(newExcluded);
     setShuffleCount((c) => c + 1);
