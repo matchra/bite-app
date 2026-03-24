@@ -18,6 +18,11 @@ function loadSaved(): Meal[] {
   catch { return []; }
 }
 
+function loadHistory(): HistoryEntry[] {
+  try { return JSON.parse(localStorage.getItem("wsie-history") || "[]"); }
+  catch { return []; }
+}
+
 const slideVariants = {
   initial: { opacity: 0, x: 30 },
   animate: { opacity: 1, x: 0 },
