@@ -124,7 +124,7 @@ export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
     setDirection(-1);
     if (step === "method") setStep("mood");
     else if (step === "ingredients") setStep("method");
-    else if (step === "diet") setStep(mealType === "cook" ? "ingredients" : "method");
+    else if (step === "diet") setStep(mealType !== "order" ? "ingredients" : "method");
     else if (step === "budget") setStep("diet");
     else if (step === "time") setStep("budget");
   };
