@@ -102,6 +102,11 @@
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     overscroll-behavior: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  .dark body {
+    color-scheme: dark;
   }
 
   h1, h2, h3, h4, h5, h6 {

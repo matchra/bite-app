@@ -1,21 +1,50 @@
 import { useState, useEffect } from "react";
-import { ChevronRight, FileText, Shield, Mail, Info, Bell, BellOff } from "lucide-react";
+import { ChevronRight, FileText, Shield, Mail, Info, Bell, BellOff, Sun, Moon } from "lucide-react";
 import { getNotificationStatus, requestNotificationPermission } from "@/lib/streak";
 import { haptic } from "@/lib/haptics";
+import { motion } from "framer-motion";
 
 interface SettingsScreenProps {
   onNavigate: (page: "privacy" | "terms" | "contact") => void;
   streak: number;
 }
 
+function getTheme(): "light" | "dark" {
+  return localStorage.getItem("wsie-theme") === "dark" ? "dark" : "light";
+}
+
+function setTheme(theme: "light" | "dark") {
+  localStorage.setItem("wsie-theme", theme);
+  document.documentElement.classList.toggle("dark", theme === "dark");
+}
+
+// Apply theme on load (called in main.tsx too)
+export function initTheme() {
+  const saved = localStorage.getItem("wsie-theme");
+  if (saved === "dark") {
+    document.documentElement.classList.add("dark");
+  } else if (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    document.documentElement.classList.add("dark");
+    localStorage.setItem("wsie-theme", "dark");
+  }
+}
+
 export default function SettingsScreen({ onNavigate, streak }: SettingsScreenProps) {
   const [notifStatus, setNotifStatus] = useState(getNotificationStatus);
+  const [theme, setThemeState] = useState<"light" | "dark">(getTheme);
 
   const handleNotifToggle = async () => {
     haptic("light");
     if (notifStatus === "granted") return;
     const granted = await requestNotificationPermission();
     setNotifStatus(granted ? "granted" : "denied");
+  };
+
+  const toggleTheme = () => {
+    haptic("light");
+    const next = theme === "light" ? "dark" : "light";
+    setThemeState(next);
+    setTheme(next);
   };
 
   return (
@@ -40,6 +69,35 @@ export default function SettingsScreen({ onNavigate, streak }: SettingsScreenPro
               </div>
             )}
           </div>
+        </div>
+
+        <SectionLabel>Appearance</SectionLabel>
+        <div className="bg-card rounded-2xl border border-border overflow-hidden">
+          <button onClick={toggleTheme} className="w-full flex items-center gap-3 px-4 py-3.5 min-h-[48px] active:bg-muted/50 transition-all duration-200">
+            <motion.div
+              key={theme}
+              initial={{ rotate: -30, scale: 0.8, opacity: 0 }}
+              animate={{ rotate: 0, scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 18 }}
+            >
+              {theme === "light" ? (
+                <Sun className="w-5 h-5 text-accent" />
+              ) : (
+                <Moon className="w-5 h-5 text-primary" />
+              )}
+            </motion.div>
+            <div className="flex-1 text-left">
+              <p className="text-sm text-card-foreground">Theme</p>
+              <p className="text-xs text-muted-foreground">{theme === "light" ? "Light mode" : "Dark mode"}</p>
+            </div>
+            <div className="w-12 h-7 rounded-full bg-secondary p-0.5 transition-colors duration-200">
+              <motion.div
+                className="w-6 h-6 rounded-full bg-primary shadow-md"
+                animate={{ x: theme === "dark" ? 18 : 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              />
+            </div>
+          </button>
         </div>
 
         <SectionLabel>Notifications</SectionLabel>
