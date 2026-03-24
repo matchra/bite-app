@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Budget, Mood, PrepTime, MealType, Diet, getTimeGreeting } from "@/data/meals";
+import { Budget, Mood, PrepTime, MealType, Diet, getTimeGreeting, Meal } from "@/data/meals";
 import { haptic } from "@/lib/haptics";
+import { getMealOfTheDay } from "@/lib/mealOfTheDay";
+import { Sparkles } from "lucide-react";
 
 interface HomeScreenProps {
   onDecide: (prefs: { budget: Budget; mood: Mood; prepTime: PrepTime; mealType: MealType | "any"; diets: Diet[] }) => void;
