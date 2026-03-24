@@ -129,7 +129,7 @@ export const meals: Meal[] = [
 
   // More Order options
   { id: "91", name: "Shawarma", emoji: "🥙", description: "Spiced meat, pickles, garlic sauce. Chef tier.", moods: ["comfort", "high-protein"], prepTime: "15", budget: "$$", type: "order", ingredients: [], tags: ["high-protein"], diets: ["dairy-free"], mealTimes: ["lunch", "dinner"] },
-  { id: "92", name: "Fish & Chips", emoji: "🐟", description: "Crispy batter, tartar sauce, vinegar.", moods: ["comfort", "any"], prepTime: "30+", budget: "$$", type: "order", ingredients: [], tags: [], diets: ["dairy-free"], mealTimes: ["lunch", "dinner"] },
+  { id: "92", name: "Fish & Chips", emoji: "🍟", description: "Crispy batter, tartar sauce, vinegar.", moods: ["comfort", "any"], prepTime: "30+", budget: "$$", type: "order", ingredients: [], tags: [], diets: ["dairy-free"], mealTimes: ["lunch", "dinner"] },
   { id: "93", name: "Fried Chicken Sandwich", emoji: "🐔", description: "Crispy, juicy, life-changing.", moods: ["comfort", "high-protein"], prepTime: "15", budget: "$$", type: "order", ingredients: [], tags: ["high-protein"], diets: [], mealTimes: ["lunch", "dinner"] },
   { id: "94", name: "Greek Salad", emoji: "🥗", description: "Feta, olives, crunch. Mediterranean king.", moods: ["healthy"], prepTime: "15", budget: "$$", type: "order", ingredients: [], tags: [], diets: ["vegetarian", "gluten-free", "keto"], mealTimes: ["lunch"] },
   { id: "95", name: "Banh Mi", emoji: "🥖", description: "Vietnamese sandwich perfection.", moods: ["any", "comfort"], prepTime: "15", budget: "$", type: "order", ingredients: [], tags: [], diets: ["dairy-free"], mealTimes: ["lunch"] },
