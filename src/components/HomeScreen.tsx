@@ -4,12 +4,35 @@ import { Budget, Mood, PrepTime, MealType, Diet, getTimeGreeting, Meal } from "@
 import { haptic } from "@/lib/haptics";
 
 interface HomeScreenProps {
-  onDecide: (prefs: { budget: Budget; mood: Mood; prepTime: PrepTime; mealType: MealType | "any"; diets: Diet[] }) => void;
+  onDecide: (prefs: { budget: Budget; mood: Mood; prepTime: PrepTime; mealType: MealType | "any"; diets: Diet[]; availableIngredients?: string[] }) => void;
   streak: number;
 }
 
 type ToggleValue = MealType | "any";
-type Step = "mood" | "method" | "diet" | "budget" | "time";
+type Step = "mood" | "method" | "ingredients" | "diet" | "budget" | "time";
+
+const COMMON_INGREDIENTS = [
+  { label: "🥚 Eggs", value: "eggs" },
+  { label: "🍞 Bread", value: "bread" },
+  { label: "🧀 Cheese", value: "cheese" },
+  { label: "🧈 Butter", value: "butter" },
+  { label: "🍚 Rice", value: "rice" },
+  { label: "🥛 Milk", value: "milk" },
+  { label: "🍝 Pasta", value: "pasta" },
+  { label: "🧄 Garlic", value: "garlic" },
+  { label: "🧅 Onion", value: "onion" },
+  { label: "🍅 Tomato", value: "tomato" },
+  { label: "🥬 Lettuce", value: "lettuce" },
+  { label: "🫘 Beans", value: "black beans" },
+  { label: "🫓 Tortillas", value: "tortillas" },
+  { label: "🍗 Chicken", value: "chicken" },
+  { label: "🥩 Ground beef", value: "ground beef" },
+  { label: "🍌 Banana", value: "banana" },
+  { label: "🥑 Avocado", value: "avocado" },
+  { label: "🥜 Peanut butter", value: "peanut butter" },
+  { label: "🍯 Honey", value: "honey" },
+  { label: "🫒 Olive oil", value: "olive oil" },
+];
 
 export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
   const [step, setStep] = useState<Step>("mood");
@@ -18,6 +41,7 @@ export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
   const [budget, setBudget] = useState<Budget | null>(null);
   const [prepTime, setPrepTime] = useState<PrepTime | null>(null);
   const [diets, setDiets] = useState<Diet[]>([]);
+  const [availableIngredients, setAvailableIngredients] = useState<string[]>([]);
   const [direction, setDirection] = useState(1);
 
   const { greeting, emoji } = getTimeGreeting();
@@ -31,7 +55,21 @@ export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
   const selectMethod = (v: ToggleValue) => {
     haptic("light");
     setMealType(v);
-    setTimeout(() => { setDirection(1); setStep("diet"); }, 200);
+    const nextStep: Step = (v === "cook") ? "ingredients" : "diet";
+    setTimeout(() => { setDirection(1); setStep(nextStep); }, 200);
+  };
+
+  const handleIngredientsNext = () => {
+    haptic("light");
+    setDirection(1);
+    setStep("diet");
+  };
+
+  const toggleIngredient = (ing: string) => {
+    haptic("light");
+    setAvailableIngredients((prev) =>
+      prev.includes(ing) ? prev.filter((x) => x !== ing) : [...prev, ing]
+    );
   };
 
   const handleDietNext = () => {
@@ -61,7 +99,14 @@ export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
   const selectTime = (v: PrepTime) => {
     haptic("medium");
     setPrepTime(v);
-    const savedPrefs = { budget: budget || "$$" as Budget, mood: mood || "any" as Mood, prepTime: v, mealType: (mealType || "any") as ToggleValue, diets };
+    const savedPrefs = {
+      budget: budget || "$$" as Budget,
+      mood: mood || "any" as Mood,
+      prepTime: v,
+      mealType: (mealType || "any") as ToggleValue,
+      diets,
+      availableIngredients: availableIngredients.length > 0 ? availableIngredients : undefined,
+    };
     persist(savedPrefs);
     setTimeout(() => onDecide(savedPrefs), 200);
   };
@@ -78,14 +123,18 @@ export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
     haptic("light");
     setDirection(-1);
     if (step === "method") setStep("mood");
-    else if (step === "diet") setStep("method");
+    else if (step === "ingredients") setStep("method");
+    else if (step === "diet") setStep(mealType === "cook" ? "ingredients" : "method");
     else if (step === "budget") setStep("diet");
     else if (step === "time") setStep("budget");
   };
 
-  const stepOrder: Step[] = mealType === "order"
-    ? ["mood", "method", "diet", "budget"]
-    : ["mood", "method", "diet", "budget", "time"];
+  const getStepOrder = (): Step[] => {
+    if (mealType === "order") return ["mood", "method", "diet", "budget"];
+    return ["mood", "method", "ingredients", "diet", "budget", "time"];
+  };
+
+  const stepOrder = getStepOrder();
   const currentStep = stepOrder.indexOf(step) + 1;
   const totalSteps = stepOrder.length;
 
@@ -94,8 +143,6 @@ export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
     center: { opacity: 1, x: 0 },
     exit: (dir: number) => ({ opacity: 0, x: dir * -80 }),
   };
-
-  
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100dvh-80px)] px-5 pt-safe pb-4">
@@ -193,6 +240,27 @@ export default function HomeScreen({ onDecide, streak }: HomeScreenProps) {
                   <BigOption key={opt.value} selected={mealType === opt.value} onClick={() => selectMethod(opt.value)} emoji={opt.emoji} label={opt.label} desc={opt.desc} />
                 ))}
               </div>
+            </StepContainer>
+          )}
+
+          {step === "ingredients" && (
+            <StepContainer key="ingredients" direction={direction} variants={variants}>
+              <StepTitle>What do you have? 🧊</StepTitle>
+              <StepSubtitle>Tap what's in your kitchen</StepSubtitle>
+              <div className="flex flex-wrap gap-2 mt-6 max-h-[280px] overflow-y-auto">
+                {COMMON_INGREDIENTS.map((ing) => (
+                  <Chip key={ing.value} selected={availableIngredients.includes(ing.value)} onClick={() => toggleIngredient(ing.value)}>
+                    {ing.label}
+                  </Chip>
+                ))}
+              </div>
+              <motion.button
+                whileTap={{ scale: 0.96 }}
+                onClick={handleIngredientsNext}
+                className="w-full mt-6 py-4 min-h-[52px] rounded-2xl bg-primary text-primary-foreground font-display font-bold text-base shadow-lg shadow-primary/25 active:bg-primary/90 transition-colors"
+              >
+                {availableIngredients.length > 0 ? `Next with ${availableIngredients.length} ingredient${availableIngredients.length !== 1 ? "s" : ""} →` : "Skip — I'll get whatever"}
+              </motion.button>
             </StepContainer>
           )}
 
